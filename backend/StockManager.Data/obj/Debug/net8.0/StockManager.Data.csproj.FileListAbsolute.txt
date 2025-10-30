@@ -1,0 +1,17 @@
+/home/user/stockmanager/backend/StockManager.Data/bin/Debug/net8.0/StockManager.Data.deps.json
+/home/user/stockmanager/backend/StockManager.Data/bin/Debug/net8.0/StockManager.Data.runtimeconfig.json
+/home/user/stockmanager/backend/StockManager.Data/bin/Debug/net8.0/StockManager.Data.dll
+/home/user/stockmanager/backend/StockManager.Data/bin/Debug/net8.0/StockManager.Data.pdb
+/home/user/stockmanager/backend/StockManager.Data/bin/Debug/net8.0/StockManager.Core.dll
+/home/user/stockmanager/backend/StockManager.Data/bin/Debug/net8.0/StockManager.Core.pdb
+/home/user/stockmanager/backend/StockManager.Data/obj/Debug/net8.0/StockManager.Data.csproj.AssemblyReference.cache
+/home/user/stockmanager/backend/StockManager.Data/obj/Debug/net8.0/StockManager.Data.GeneratedMSBuildEditorConfig.editorconfig
+/home/user/stockmanager/backend/StockManager.Data/obj/Debug/net8.0/StockManager.Data.AssemblyInfoInputs.cache
+/home/user/stockmanager/backend/StockManager.Data/obj/Debug/net8.0/StockManager.Data.AssemblyInfo.cs
+/home/user/stockmanager/backend/StockManager.Data/obj/Debug/net8.0/StockManager.Data.csproj.CoreCompileInputs.cache
+/home/user/stockmanager/backend/StockManager.Data/obj/Debug/net8.0/StockMan.B719A03C.Up2Date
+/home/user/stockmanager/backend/StockManager.Data/obj/Debug/net8.0/StockManager.Data.dll
+/home/user/stockmanager/backend/StockManager.Data/obj/Debug/net8.0/refint/StockManager.Data.dll
+/home/user/stockmanager/backend/StockManager.Data/obj/Debug/net8.0/StockManager.Data.pdb
+/home/user/stockmanager/backend/StockManager.Data/obj/Debug/net8.0/StockManager.Data.genruntimeconfig.cache
+/home/user/stockmanager/backend/StockManager.Data/obj/Debug/net8.0/ref/StockManager.Data.dll
