@@ -4,9 +4,8 @@
 @include mat.core();
 
 html {
-  // Apply the light theme by default
-  @include mat.core-theme(m3-theme.$light-theme);
-  @include mat.button-theme(m3-theme.$light-theme);
+  // Apply the light theme to all components
+  @include mat.all-component-themes(m3-theme.$light-theme);
 }
 
 // Global styles
@@ -26,7 +25,7 @@ html, body {
 }
 
 body {
-  background-color: #f5f5f5;
+  background-color: #f9f9f7;
   color: #1a1c1b;
   font-size: 14px;
   line-height: 1.5;
@@ -49,4 +48,71 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #90918f;
+}
+
+// Ensure text visibility in Material components
+.mat-mdc-form-field {
+  .mat-mdc-input-element {
+    color: #1a1c1b !important;
+  }
+
+  .mat-mdc-form-field-label,
+  .mat-mdc-floating-label {
+    color: #5d5f5d !important;
+  }
+
+  .mat-mdc-select-value,
+  .mat-mdc-select-value-text {
+    color: #1a1c1b !important;
+  }
+}
+
+.mat-mdc-option {
+  color: #1a1c1b !important;
+
+  .mat-mdc-option-text {
+    color: #1a1c1b !important;
+  }
+}
+
+.mat-mdc-list-item,
+.mat-mdc-list-option {
+  color: #1a1c1b !important;
+
+  .mat-mdc-list-item-title {
+    color: #1a1c1b !important;
+  }
+}
+
+.mat-mdc-card {
+  color: #1a1c1b !important;
+
+  .mat-mdc-card-title {
+    color: #1a1c1b !important;
+  }
+
+  .mat-mdc-card-subtitle {
+    color: #5d5f5d !important;
+  }
+
+  .mat-mdc-card-content {
+    color: #1a1c1b !important;
+  }
+}
+
+.mat-mdc-table {
+  color: #1a1c1b !important;
+
+  th, td {
+    color: #1a1c1b !important;
+  }
+}
+
+.mat-mdc-button,
+.mat-mdc-raised-button,
+.mat-mdc-flat-button,
+.mat-mdc-stroked-button {
+  .mdc-button__label {
+    color: inherit !important;
+  }
 }
