@@ -1,8 +1,8 @@
 export enum UserRole {
-  Admin = 'Admin',
-  Manager = 'Manager',
-  Staff = 'Staff',
-  Viewer = 'Viewer'
+  Admin = 0,
+  Manager = 1,
+  Staff = 2,
+  Viewer = 3
 }
 
 export interface LoginRequest {
@@ -25,7 +25,7 @@ export interface AuthResponse {
   email: string;
   firstName: string;
   lastName: string;
-  role: string;
+  role: number;
   businessId: number;
   businessName: string;
 }

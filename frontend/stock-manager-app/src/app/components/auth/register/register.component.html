@@ -66,8 +66,8 @@
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Role</mat-label>
           <mat-select formControlName="role">
-            @for (role of roles; track role) {
-              <mat-option [value]="role">{{ role }}</mat-option>
+            @for (role of roles; track role.value) {
+              <mat-option [value]="role.value">{{ role.label }}</mat-option>
             }
           </mat-select>
         </mat-form-field>

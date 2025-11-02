@@ -32,7 +32,12 @@ export class RegisterComponent {
   registerForm: FormGroup;
   loading = false;
   errorMessage = '';
-  roles = Object.values(UserRole);
+  roles = [
+    { value: UserRole.Admin, label: 'Admin' },
+    { value: UserRole.Manager, label: 'Manager' },
+    { value: UserRole.Staff, label: 'Staff' },
+    { value: UserRole.Viewer, label: 'Viewer' }
+  ];
 
   constructor(
     private fb: FormBuilder,
