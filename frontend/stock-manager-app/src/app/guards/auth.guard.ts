@@ -8,7 +8,7 @@ export const authGuard: CanActivateFn = (route, state) => {
 
   if (authService.isAuthenticated()) {
     // Check for required roles
-    const requiredRoles = route.data['roles'] as string[];
+    const requiredRoles = route.data['roles'] as number[];
     if (requiredRoles && !authService.hasRole(requiredRoles)) {
       router.navigate(['/dashboard']);
       return false;

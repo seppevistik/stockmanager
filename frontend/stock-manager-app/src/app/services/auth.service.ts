@@ -54,7 +54,7 @@ export class AuthService {
     return !!this.getToken();
   }
 
-  hasRole(roles: string[]): boolean {
+  hasRole(roles: number[]): boolean {
     const user = this.getCurrentUser();
     return !!user && roles.includes(user.role);
   }
