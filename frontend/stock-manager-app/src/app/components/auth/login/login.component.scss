@@ -8,23 +8,26 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #e7f4ec 0%, #d9e6dd 50%, #bdcac2 100%);
   padding: 20px;
 }
 
 .login-card {
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
 
   ::ng-deep .mat-mdc-card {
-    padding: 32px;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    background: white;
   }
 
   ::ng-deep mat-card-header {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: 24px;
+    margin-bottom: 32px;
     padding: 0;
 
     .mat-mdc-card-header-text {
@@ -34,16 +37,19 @@
   }
 
   ::ng-deep mat-card-title {
-    font-size: 28px;
-    font-weight: 600;
+    font-size: 32px;
+    font-weight: 500;
     margin-bottom: 8px;
     text-align: center;
+    color: #00513c;
+    letter-spacing: -0.5px;
   }
 
   ::ng-deep mat-card-subtitle {
-    font-size: 14px;
-    color: rgba(0, 0, 0, 0.6);
+    font-size: 15px;
+    color: #5d5f5d;
     text-align: center;
+    font-weight: 400;
   }
 
   ::ng-deep mat-card-content {
@@ -55,7 +61,7 @@
 form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
 .full-width {
@@ -64,31 +70,36 @@ form {
 
 .login-button {
   height: 48px;
-  margin-top: 8px;
-  font-size: 16px;
+  margin-top: 12px;
+  font-size: 15px;
   font-weight: 500;
+  border-radius: 8px;
+  letter-spacing: 0.3px;
 }
 
 .error-message {
-  background-color: #ffebee;
-  color: #c62828;
-  padding: 12px;
-  border-radius: 4px;
+  background-color: #ffedea;
+  color: #ba1a1a;
+  padding: 14px 16px;
+  border-radius: 8px;
   font-size: 14px;
   text-align: center;
+  border: 1px solid #ffdad6;
 }
 
 .register-link {
   text-align: center;
-  margin-top: 20px;
+  margin-top: 24px;
   font-size: 14px;
+  color: #5d5f5d;
 
   a {
-    color: #667eea;
+    color: #006c50;
     text-decoration: none;
     font-weight: 500;
 
     &:hover {
+      color: #00513c;
       text-decoration: underline;
     }
   }

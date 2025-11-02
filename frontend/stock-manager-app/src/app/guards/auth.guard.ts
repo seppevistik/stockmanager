@@ -1,6 +1,7 @@
 import { inject } from '@angular/core';
 import { Router, CanActivateFn } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { UserRole } from '../models/user.model';
 
 export const authGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
@@ -8,7 +9,7 @@ export const authGuard: CanActivateFn = (route, state) => {
 
   if (authService.isAuthenticated()) {
     // Check for required roles
-    const requiredRoles = route.data['roles'] as number[];
+    const requiredRoles = route.data['roles'] as UserRole[];
     if (requiredRoles && !authService.hasRole(requiredRoles)) {
       router.navigate(['/dashboard']);
       return false;

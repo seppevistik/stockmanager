@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
-import { LoginRequest, RegisterRequest, AuthResponse, User } from '../models/user.model';
+import { LoginRequest, RegisterRequest, AuthResponse, User, UserRole } from '../models/user.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -54,7 +54,7 @@ export class AuthService {
     return !!this.getToken();
   }
 
-  hasRole(roles: number[]): boolean {
+  hasRole(roles: UserRole[]): boolean {
     const user = this.getCurrentUser();
     return !!user && roles.includes(user.role);
   }

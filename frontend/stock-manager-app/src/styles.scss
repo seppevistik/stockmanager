@@ -8,3 +8,45 @@ html {
   @include mat.core-theme(m3-theme.$light-theme);
   @include mat.button-theme(m3-theme.$light-theme);
 }
+
+// Global styles
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Roboto', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: #f5f5f5;
+  color: #1a1c1b;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+// Modern scrollbar
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1ef;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c6c7c5;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #90918f;
+}
