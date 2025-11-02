@@ -1,3 +1,8 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
 .login-container {
   display: flex;
   justify-content: center;
@@ -10,25 +15,41 @@
 .login-card {
   width: 100%;
   max-width: 400px;
-  padding: 20px;
-}
 
-mat-card-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 24px;
-}
+  ::ng-deep .mat-mdc-card {
+    padding: 32px;
+  }
 
-mat-card-title {
-  font-size: 28px;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
+  ::ng-deep mat-card-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 0;
 
-mat-card-subtitle {
-  font-size: 14px;
-  color: rgba(0, 0, 0, 0.6);
+    .mat-mdc-card-header-text {
+      width: 100%;
+      margin: 0;
+    }
+  }
+
+  ::ng-deep mat-card-title {
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+
+  ::ng-deep mat-card-subtitle {
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.6);
+    text-align: center;
+  }
+
+  ::ng-deep mat-card-content {
+    padding: 0;
+    margin: 0;
+  }
 }
 
 form {
@@ -73,7 +94,7 @@ form {
   }
 }
 
-mat-spinner {
+::ng-deep mat-spinner {
   display: inline-block;
   margin: 0 auto;
 }
