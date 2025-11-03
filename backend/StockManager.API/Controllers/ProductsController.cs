@@ -94,4 +94,21 @@ public class ProductsController : ControllerBase
 
         return NoContent();
     }
+
+    [HttpPost("bulk-adjust-stock")]
+    [Authorize(Roles = "Admin,Manager,Staff")]
+    public async Task<IActionResult> BulkAdjustStock([FromBody] BulkStockAdjustmentDto adjustmentDto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var businessId = GetBusinessId();
+        var userId = GetUserId();
+        var result = await _productService.BulkAdjustStockAsync(adjustmentDto, businessId, userId);
+
+        if (!result.Success)
+            return BadRequest(new { message = result.Error });
+
+        return Ok(new { message = $"Successfully updated {result.UpdatedCount} products", updatedCount = result.UpdatedCount });
+    }
 }

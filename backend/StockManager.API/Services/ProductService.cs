@@ -17,13 +17,13 @@ public class ProductService
         _mapper = mapper;
     }
 
-    public async Task<IEnumerable<ProductDto>> GetProductsByBusinessAsync(int businessId)
+    public virtual async Task<IEnumerable<ProductDto>> GetProductsByBusinessAsync(int businessId)
     {
         var products = await _unitOfWork.Products.GetByBusinessIdAsync(businessId);
         return products.Select(p => MapToDto(p));
     }
 
-    public async Task<ProductDto?> GetProductByIdAsync(int id, int businessId)
+    public virtual async Task<ProductDto?> GetProductByIdAsync(int id, int businessId)
     {
         var product = await _unitOfWork.Products.GetByIdAsync(id);
         if (product == null || product.BusinessId != businessId)
@@ -32,7 +32,7 @@ public class ProductService
         return MapToDto(product);
     }
 
-    public async Task<(bool Success, string? Error, ProductDto? Product)> CreateProductAsync(CreateProductDto createDto, int businessId, string userId)
+    public virtual async Task<(bool Success, string? Error, ProductDto? Product)> CreateProductAsync(CreateProductDto createDto, int businessId, string userId)
     {
         // Check if SKU already exists
         var existingProduct = await _unitOfWork.Products.GetBySkuAsync(createDto.SKU, businessId);
@@ -84,7 +84,7 @@ public class ProductService
         return (true, null, MapToDto(product));
     }
 
-    public async Task<(bool Success, string? Error)> UpdateProductAsync(int id, CreateProductDto updateDto, int businessId)
+    public virtual async Task<(bool Success, string? Error)> UpdateProductAsync(int id, CreateProductDto updateDto, int businessId)
     {
         var product = await _unitOfWork.Products.GetByIdAsync(id);
         if (product == null || product.BusinessId != businessId)
@@ -120,7 +120,7 @@ public class ProductService
         return (true, null);
     }
 
-    public async Task<(bool Success, string? Error)> DeleteProductAsync(int id, int businessId)
+    public virtual async Task<(bool Success, string? Error)> DeleteProductAsync(int id, int businessId)
     {
         var product = await _unitOfWork.Products.GetByIdAsync(id);
         if (product == null || product.BusinessId != businessId)
@@ -137,10 +137,69 @@ public class ProductService
         return (true, null);
     }
 
-    public async Task<IEnumerable<ProductDto>> GetLowStockProductsAsync(int businessId)
+    public virtual async Task<IEnumerable<ProductDto>> GetLowStockProductsAsync(int businessId)
     {
         var products = await _unitOfWork.Products.GetLowStockProductsAsync(businessId);
         return products.Select(p => MapToDto(p));
+    }
+
+    public virtual async Task<(bool Success, string? Error, int UpdatedCount)> BulkAdjustStockAsync(
+        BulkStockAdjustmentDto adjustmentDto,
+        int businessId,
+        string userId)
+    {
+        if (adjustmentDto.Adjustments == null || !adjustmentDto.Adjustments.Any())
+        {
+            return (false, "No adjustments provided", 0);
+        }
+
+        var updatedCount = 0;
+        var errors = new List<string>();
+
+        foreach (var adjustment in adjustmentDto.Adjustments)
+        {
+            var product = await _unitOfWork.Products.GetByIdAsync(adjustment.ProductId);
+
+            if (product == null || product.BusinessId != businessId)
+            {
+                errors.Add($"Product with ID {adjustment.ProductId} not found");
+                continue;
+            }
+
+            var previousStock = product.CurrentStock;
+            var difference = adjustment.NewStock - previousStock;
+
+            // Update the current stock
+            product.CurrentStock = adjustment.NewStock;
+            product.UpdatedAt = DateTime.UtcNow;
+
+            await _unitOfWork.Products.UpdateAsync(product);
+
+            // Create stock movement for audit trail
+            var stockMovement = new StockMovement
+            {
+                ProductId = product.Id,
+                MovementType = StockMovementType.StockAdjustment,
+                Quantity = Math.Abs(difference),
+                PreviousStock = previousStock,
+                NewStock = adjustment.NewStock,
+                Reason = adjustmentDto.Reason,
+                UserId = userId,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _unitOfWork.StockMovements.AddAsync(stockMovement);
+            updatedCount++;
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+
+        if (errors.Any() && updatedCount == 0)
+        {
+            return (false, string.Join("; ", errors), 0);
+        }
+
+        return (true, errors.Any() ? string.Join("; ", errors) : null, updatedCount);
     }
 
     private ProductDto MapToDto(Product product)

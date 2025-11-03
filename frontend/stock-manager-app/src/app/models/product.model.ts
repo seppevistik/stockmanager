@@ -35,3 +35,13 @@ export interface CreateProductRequest {
   costPerUnit: number;
   location?: string;
 }
+
+export interface StockAdjustment {
+  productId: number;
+  newStock: number;
+}
+
+export interface BulkStockAdjustment {
+  adjustments: StockAdjustment[];
+  reason: string;
+}

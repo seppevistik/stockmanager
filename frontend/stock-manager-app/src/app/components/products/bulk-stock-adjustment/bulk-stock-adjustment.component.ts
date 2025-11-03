@@ -97,57 +97,27 @@ export class BulkStockAdjustmentComponent implements OnInit {
     this.saving = true;
     this.errorMessage = '';
 
-    // Create an array of update requests
-    const updateRequests = changedAdjustments.map(adj => {
-      const productData = {
-        name: adj.product.name,
-        description: adj.product.description || '',
-        sku: adj.product.sku,
-        unitOfMeasurement: adj.product.unitOfMeasurement,
-        supplier: adj.product.supplier || '',
-        minimumStockLevel: adj.product.minimumStockLevel,
-        initialStock: adj.newStock!, // This will update the current stock
-        costPerUnit: adj.product.costPerUnit,
-        location: adj.product.location || ''
-      };
-      return this.productService.update(adj.product.id, productData);
-    });
+    // Create bulk adjustment request
+    const bulkAdjustment = {
+      adjustments: changedAdjustments.map(adj => ({
+        productId: adj.product.id,
+        newStock: adj.newStock!
+      })),
+      reason: 'Bulk stock adjustment'
+    };
 
-    // Execute all updates
-    let completed = 0;
-    let failed = 0;
-
-    updateRequests.forEach((request, index) => {
-      request.subscribe({
-        next: () => {
-          completed++;
-          if (completed + failed === updateRequests.length) {
-            this.handleBulkUpdateComplete(completed, failed);
-          }
-        },
-        error: (error: any) => {
-          console.error('Error updating product:', error);
-          failed++;
-          if (completed + failed === updateRequests.length) {
-            this.handleBulkUpdateComplete(completed, failed);
-          }
-        }
-      });
-    });
-  }
-
-  handleBulkUpdateComplete(completed: number, failed: number): void {
-    this.saving = false;
-    if (failed === 0) {
-      // All updates successful, navigate back to products
-      this.router.navigate(['/products']);
-    } else {
-      this.errorMessage = `Updated ${completed} products successfully. ${failed} products failed to update.`;
-      if (completed > 0) {
-        // Reload to show updated values
-        this.loadProducts();
+    this.productService.bulkAdjustStock(bulkAdjustment).subscribe({
+      next: (response) => {
+        this.saving = false;
+        // Navigate back to products page on success
+        this.router.navigate(['/products']);
+      },
+      error: (error: any) => {
+        console.error('Error updating stock:', error);
+        this.saving = false;
+        this.errorMessage = error.error?.message || 'Failed to update stock. Please try again.';
       }
-    }
+    });
   }
 
   cancel(): void {

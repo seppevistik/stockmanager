@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Product, CreateProductRequest } from '../models/product.model';
+import { Product, CreateProductRequest, StockAdjustment, BulkStockAdjustment } from '../models/product.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -34,5 +34,9 @@ export class ProductService {
 
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.API_URL}/${id}`);
+  }
+
+  bulkAdjustStock(adjustments: BulkStockAdjustment): Observable<{ message: string; updatedCount: number }> {
+    return this.http.post<{ message: string; updatedCount: number }>(`${this.API_URL}/bulk-adjust-stock`, adjustments);
   }
 }

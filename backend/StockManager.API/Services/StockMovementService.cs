@@ -14,13 +14,13 @@ public class StockMovementService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<IEnumerable<StockMovementDto>> GetMovementsByBusinessAsync(int businessId, DateTime? startDate = null, DateTime? endDate = null)
+    public virtual async Task<IEnumerable<StockMovementDto>> GetMovementsByBusinessAsync(int businessId, DateTime? startDate = null, DateTime? endDate = null)
     {
         var movements = await _unitOfWork.StockMovements.GetByBusinessIdAsync(businessId, startDate, endDate);
         return movements.Select(MapToDto);
     }
 
-    public async Task<IEnumerable<StockMovementDto>> GetMovementsByProductAsync(int productId, int businessId)
+    public virtual async Task<IEnumerable<StockMovementDto>> GetMovementsByProductAsync(int productId, int businessId)
     {
         var product = await _unitOfWork.Products.GetByIdAsync(productId);
         if (product == null || product.BusinessId != businessId)
@@ -30,13 +30,13 @@ public class StockMovementService
         return movements.Select(MapToDto);
     }
 
-    public async Task<IEnumerable<StockMovementDto>> GetRecentMovementsAsync(int businessId, int count = 10)
+    public virtual async Task<IEnumerable<StockMovementDto>> GetRecentMovementsAsync(int businessId, int count = 10)
     {
         var movements = await _unitOfWork.StockMovements.GetRecentMovementsAsync(businessId, count);
         return movements.Select(MapToDto);
     }
 
-    public async Task<(bool Success, string? Error, StockMovementDto? Movement)> CreateMovementAsync(CreateStockMovementDto createDto, int businessId, string userId)
+    public virtual async Task<(bool Success, string? Error, StockMovementDto? Movement)> CreateMovementAsync(CreateStockMovementDto createDto, int businessId, string userId)
     {
         var product = await _unitOfWork.Products.GetByIdAsync(createDto.ProductId);
         if (product == null || product.BusinessId != businessId)
