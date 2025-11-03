@@ -55,9 +55,8 @@ export class BulkStockAdjustmentComponent implements OnInit {
     this.loading = true;
     this.productService.getAll().subscribe({
       next: (products) => {
-        // Filter for active products only
-        const activeProducts = products.filter(p => p.status === 'Active');
-        this.adjustments = activeProducts.map(product => ({
+        // Show all products for bulk adjustment
+        this.adjustments = products.map(product => ({
           product,
           newStock: null,
           changed: false
