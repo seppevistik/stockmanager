@@ -1,0 +1,112 @@
+.form-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.form-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
+
+  h1 {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 500;
+    color: #1a1c1b;
+    letter-spacing: -0.5px;
+  }
+
+  button {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+mat-card {
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e2e1;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 64px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-row {
+  display: flex;
+  gap: 20px;
+
+  &.two-columns {
+    mat-form-field {
+      flex: 1;
+    }
+  }
+
+  &.three-columns {
+    mat-form-field {
+      flex: 1;
+    }
+  }
+
+  .full-width {
+    width: 100%;
+  }
+}
+
+.error-message {
+  background-color: #ffedea;
+  color: #ba1a1a;
+  padding: 14px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  text-align: center;
+  border: 1px solid #ffdad6;
+  margin-top: 8px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid #e2e2e1;
+
+  button {
+    border-radius: 8px;
+    min-width: 120px;
+
+    mat-icon {
+      margin-right: 8px;
+    }
+
+    mat-spinner {
+      display: inline-block;
+      margin: 0 auto;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .form-row {
+    &.two-columns,
+    &.three-columns {
+      flex-direction: column;
+
+      mat-form-field {
+        width: 100%;
+      }
+    }
+  }
+}

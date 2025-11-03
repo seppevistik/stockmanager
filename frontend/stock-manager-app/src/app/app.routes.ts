@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard';
+import { UserRole } from './models/user.model';
 
 export const routes: Routes = [
   {
@@ -24,14 +25,14 @@ export const routes: Routes = [
         loadComponent: () => import('./components/products/products-list/products-list.component').then(m => m.ProductsListComponent)
       },
       {
-        path: 'products/add',
+        path: 'products/new',
         loadComponent: () => import('./components/products/product-form/product-form.component').then(m => m.ProductFormComponent),
-        data: { roles: ['Admin', 'Manager', 'Staff'] }
+        data: { roles: [UserRole.Admin, UserRole.Manager, UserRole.Staff] }
       },
       {
         path: 'products/edit/:id',
         loadComponent: () => import('./components/products/product-form/product-form.component').then(m => m.ProductFormComponent),
-        data: { roles: ['Admin', 'Manager', 'Staff'] }
+        data: { roles: [UserRole.Admin, UserRole.Manager, UserRole.Staff] }
       },
       {
         path: 'stock-movements',

@@ -1,1 +1,172 @@
-<p>product-form works!</p>
+<div class="form-container">
+  <div class="form-header">
+    <button mat-icon-button (click)="cancel()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1>{{ isEditMode ? 'Edit Product' : 'Add New Product' }}</h1>
+  </div>
+
+  @if (loading) {
+    <div class="loading-spinner">
+      <mat-spinner></mat-spinner>
+    </div>
+  } @else {
+    <mat-card>
+      <mat-card-content>
+        <form [formGroup]="productForm" (ngSubmit)="onSubmit()">
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Product Name</mat-label>
+              <input matInput formControlName="name" placeholder="Enter product name" required>
+              @if (name?.invalid && name?.touched) {
+                <mat-error>
+                  @if (name?.errors?.['required']) {
+                    Product name is required
+                  }
+                  @if (name?.errors?.['maxlength']) {
+                    Maximum 200 characters allowed
+                  }
+                </mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Description</mat-label>
+              <textarea matInput formControlName="description" placeholder="Enter product description" rows="3"></textarea>
+              @if (productForm.get('description')?.invalid && productForm.get('description')?.touched) {
+                <mat-error>
+                  Maximum 1000 characters allowed
+                </mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <div class="form-row two-columns">
+            <mat-form-field appearance="outline">
+              <mat-label>SKU</mat-label>
+              <input matInput formControlName="sku" placeholder="e.g., PROD-001" required>
+              @if (sku?.invalid && sku?.touched) {
+                <mat-error>
+                  @if (sku?.errors?.['required']) {
+                    SKU is required
+                  }
+                  @if (sku?.errors?.['maxlength']) {
+                    Maximum 50 characters allowed
+                  }
+                </mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Unit of Measurement</mat-label>
+              <input matInput formControlName="unitOfMeasurement" placeholder="e.g., pcs, kg, liters" required>
+              @if (unitOfMeasurement?.invalid && unitOfMeasurement?.touched) {
+                <mat-error>
+                  @if (unitOfMeasurement?.errors?.['required']) {
+                    Unit is required
+                  }
+                  @if (unitOfMeasurement?.errors?.['maxlength']) {
+                    Maximum 20 characters allowed
+                  }
+                </mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <div class="form-row two-columns">
+            <mat-form-field appearance="outline">
+              <mat-label>Supplier</mat-label>
+              <input matInput formControlName="supplier" placeholder="Enter supplier name">
+              @if (productForm.get('supplier')?.invalid && productForm.get('supplier')?.touched) {
+                <mat-error>
+                  Maximum 200 characters allowed
+                </mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Location</mat-label>
+              <input matInput formControlName="location" placeholder="e.g., Warehouse A, Shelf 3">
+              @if (productForm.get('location')?.invalid && productForm.get('location')?.touched) {
+                <mat-error>
+                  Maximum 100 characters allowed
+                </mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <div class="form-row three-columns">
+            <mat-form-field appearance="outline">
+              <mat-label>Minimum Stock Level</mat-label>
+              <input matInput type="number" formControlName="minimumStockLevel" placeholder="0" required>
+              @if (minimumStockLevel?.invalid && minimumStockLevel?.touched) {
+                <mat-error>
+                  @if (minimumStockLevel?.errors?.['required']) {
+                    Minimum stock is required
+                  }
+                  @if (minimumStockLevel?.errors?.['min']) {
+                    Must be 0 or greater
+                  }
+                </mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ isEditMode ? 'Current Stock' : 'Initial Stock' }}</mat-label>
+              <input matInput type="number" formControlName="initialStock" placeholder="0" required>
+              @if (initialStock?.invalid && initialStock?.touched) {
+                <mat-error>
+                  @if (initialStock?.errors?.['required']) {
+                    Stock quantity is required
+                  }
+                  @if (initialStock?.errors?.['min']) {
+                    Must be 0 or greater
+                  }
+                </mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Cost Per Unit ($)</mat-label>
+              <input matInput type="number" formControlName="costPerUnit" placeholder="0.00" step="0.01" required>
+              @if (costPerUnit?.invalid && costPerUnit?.touched) {
+                <mat-error>
+                  @if (costPerUnit?.errors?.['required']) {
+                    Cost is required
+                  }
+                  @if (costPerUnit?.errors?.['min']) {
+                    Must be 0 or greater
+                  }
+                </mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          @if (errorMessage) {
+            <div class="error-message">
+              {{ errorMessage }}
+            </div>
+          }
+
+          <div class="form-actions">
+            <button mat-button type="button" (click)="cancel()" [disabled]="saving">
+              Cancel
+            </button>
+            <button mat-raised-button color="primary" type="submit" [disabled]="saving || productForm.invalid">
+              @if (saving) {
+                <mat-spinner diameter="20"></mat-spinner>
+              } @else {
+                <ng-container>
+                  <mat-icon>save</mat-icon>
+                  {{ isEditMode ? 'Update Product' : 'Create Product' }}
+                </ng-container>
+              }
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>
