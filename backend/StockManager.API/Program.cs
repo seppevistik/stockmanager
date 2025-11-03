@@ -123,6 +123,7 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<StockMovementService>();
+builder.Services.AddScoped<CompanyService>();
 
 var app = builder.Build();
 

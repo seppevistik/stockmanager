@@ -1,0 +1,54 @@
+.companies-container {
+  padding: 24px;
+
+  .header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    gap: 16px;
+
+    .search-field {
+      flex: 1;
+      max-width: 500px;
+    }
+  }
+
+  .loading {
+    text-align: center;
+    padding: 48px;
+    color: #666;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 64px 24px;
+
+    mat-icon {
+      font-size: 64px;
+      width: 64px;
+      height: 64px;
+      color: #ccc;
+    }
+
+    p {
+      color: #666;
+      margin: 16px 0 24px;
+      font-size: 16px;
+    }
+  }
+
+  .companies-table {
+    width: 100%;
+
+    .supplier-chip {
+      background-color: #4caf50 !important;
+      color: white !important;
+    }
+
+    .customer-chip {
+      background-color: #2196f3 !important;
+      color: white !important;
+    }
+  }
+}

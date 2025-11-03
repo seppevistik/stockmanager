@@ -1,0 +1,86 @@
+<div class="companies-container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Companies</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="header-actions">
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>Search companies</mat-label>
+          <input matInput [(ngModel)]="searchTerm" (ngModelChange)="filterCompanies()" placeholder="Search by name, contact, email...">
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+        <button mat-raised-button color="primary" (click)="addCompany()">
+          <mat-icon>add</mat-icon>
+          Add Company
+        </button>
+      </div>
+
+      @if (loading) {
+        <div class="loading">Loading companies...</div>
+      } @else if (filteredCompanies.length === 0) {
+        <div class="empty-state">
+          <mat-icon>business</mat-icon>
+          <p>No companies found</p>
+          <button mat-raised-button color="primary" (click)="addCompany()">Add Your First Company</button>
+        </div>
+      } @else {
+        <table mat-table [dataSource]="filteredCompanies" class="companies-table">
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef>Name</th>
+            <td mat-cell *matCellDef="let company">{{ company.name }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="contactPerson">
+            <th mat-header-cell *matHeaderCellDef>Contact Person</th>
+            <td mat-cell *matCellDef="let company">{{ company.contactPerson || '-' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="email">
+            <th mat-header-cell *matHeaderCellDef>Email</th>
+            <td mat-cell *matCellDef="let company">{{ company.email || '-' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="phone">
+            <th mat-header-cell *matHeaderCellDef>Phone</th>
+            <td mat-cell *matCellDef="let company">{{ company.phone || '-' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="city">
+            <th mat-header-cell *matHeaderCellDef>City</th>
+            <td mat-cell *matCellDef="let company">{{ company.city || '-' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="types">
+            <th mat-header-cell *matHeaderCellDef>Type</th>
+            <td mat-cell *matCellDef="let company">
+              <mat-chip-set>
+                @if (company.isSupplier) {
+                  <mat-chip class="supplier-chip">Supplier</mat-chip>
+                }
+                @if (company.isCustomer) {
+                  <mat-chip class="customer-chip">Customer</mat-chip>
+                }
+              </mat-chip-set>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let company">
+              <button mat-icon-button (click)="editCompany(company.id)" matTooltip="Edit">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="deleteCompany(company.id, company.name)" matTooltip="Delete">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>

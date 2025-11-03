@@ -15,6 +15,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Product> Products { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<StockMovement> StockMovements { get; set; }
+    public DbSet<Company> Companies { get; set; }
+    public DbSet<ProductSupplier> ProductSuppliers { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -100,6 +102,50 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.HasQueryFilter(e => !e.IsDeleted);
             entity.HasIndex(e => e.ProductId);
             entity.HasIndex(e => e.CreatedAt);
+        });
+
+        // Company configuration
+        builder.Entity<Company>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.ContactPerson).HasMaxLength(100);
+            entity.Property(e => e.Email).HasMaxLength(100);
+            entity.Property(e => e.Phone).HasMaxLength(50);
+            entity.Property(e => e.City).HasMaxLength(100);
+            entity.Property(e => e.Country).HasMaxLength(100);
+            entity.Property(e => e.PostalCode).HasMaxLength(20);
+            entity.Property(e => e.TaxNumber).HasMaxLength(50);
+
+            entity.HasOne(e => e.Business)
+                  .WithMany()
+                  .HasForeignKey(e => e.BusinessId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasQueryFilter(e => !e.IsDeleted);
+            entity.HasIndex(e => new { e.BusinessId, e.Name });
+            entity.HasIndex(e => e.IsSupplier);
+            entity.HasIndex(e => e.IsCustomer);
+        });
+
+        // ProductSupplier configuration (many-to-many junction table)
+        builder.Entity<ProductSupplier>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.SupplierPrice).HasPrecision(18, 2);
+
+            entity.HasOne(e => e.Product)
+                  .WithMany(p => p.ProductSuppliers)
+                  .HasForeignKey(e => e.ProductId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Company)
+                  .WithMany(c => c.ProductSuppliers)
+                  .HasForeignKey(e => e.CompanyId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => new { e.ProductId, e.CompanyId }).IsUnique();
+            entity.HasIndex(e => e.IsPrimarySupplier);
         });
     }
 

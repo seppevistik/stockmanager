@@ -44,6 +44,20 @@ export const routes: Routes = [
         loadComponent: () => import('./components/stock-movements/stock-movements-list/stock-movements-list.component').then(m => m.StockMovementsListComponent)
       },
       {
+        path: 'companies',
+        loadComponent: () => import('./components/companies/companies-list/companies-list.component').then(m => m.CompaniesListComponent)
+      },
+      {
+        path: 'companies/new',
+        loadComponent: () => import('./components/companies/company-form/company-form.component').then(m => m.CompanyFormComponent),
+        data: { roles: [UserRole.Admin, UserRole.Manager] }
+      },
+      {
+        path: 'companies/edit/:id',
+        loadComponent: () => import('./components/companies/company-form/company-form.component').then(m => m.CompanyFormComponent),
+        data: { roles: [UserRole.Admin, UserRole.Manager] }
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full'

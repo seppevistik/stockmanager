@@ -22,4 +22,5 @@ public class Product : BaseEntity
     public Business Business { get; set; } = null!;
     public Category? Category { get; set; }
     public ICollection<StockMovement> StockMovements { get; set; } = new List<StockMovement>();
+    public ICollection<ProductSupplier> ProductSuppliers { get; set; } = new List<ProductSupplier>();
 }
