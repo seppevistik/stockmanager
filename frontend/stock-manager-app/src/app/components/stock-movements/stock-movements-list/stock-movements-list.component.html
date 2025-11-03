@@ -1,1 +1,166 @@
-<p>stock-movements-list works!</p>
+<div class="movements-container">
+  <div class="movements-header">
+    <h1>Stock Movements</h1>
+  </div>
+
+  <mat-card class="filters-card">
+    <mat-card-content>
+      <div class="filters">
+        <mat-form-field appearance="outline" class="filter-field search-field">
+          <mat-label>Search</mat-label>
+          <input matInput [(ngModel)]="searchTerm" (ngModelChange)="onFilterChange()" placeholder="Product, SKU, user, reason">
+          <mat-icon matPrefix>search</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Movement Type</mat-label>
+          <mat-select [(ngModel)]="selectedType" (ngModelChange)="onFilterChange()">
+            @for (type of movementTypes; track type.value) {
+              <mat-option [value]="type.value">{{ type.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Start Date</mat-label>
+          <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate" (ngModelChange)="onDateRangeChange()">
+          <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+          <mat-datepicker #startPicker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>End Date</mat-label>
+          <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate" (ngModelChange)="onDateRangeChange()">
+          <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
+          <mat-datepicker #endPicker></mat-datepicker>
+        </mat-form-field>
+
+        <button mat-stroked-button (click)="clearFilters()" class="clear-button">
+          <mat-icon>clear</mat-icon>
+          Clear Filters
+        </button>
+      </div>
+
+      <div class="results-count">
+        Showing {{ filteredMovements.length }} of {{ movements.length }} movements
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="table-card">
+    <mat-card-content>
+      @if (loading) {
+        <div class="loading-spinner">
+          <mat-spinner></mat-spinner>
+        </div>
+      } @else {
+        @if (filteredMovements.length > 0) {
+          <div class="table-container">
+            <table mat-table [dataSource]="filteredMovements" class="movements-table">
+              <ng-container matColumnDef="date">
+                <th mat-header-cell *matHeaderCellDef>Date & Time</th>
+                <td mat-cell *matCellDef="let movement">
+                  <div class="date-cell">
+                    <strong>{{ movement.createdAt | date:'short' }}</strong>
+                  </div>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="product">
+                <th mat-header-cell *matHeaderCellDef>Product</th>
+                <td mat-cell *matCellDef="let movement">
+                  <div class="product-cell">
+                    <strong>{{ movement.productName }}</strong>
+                    <small>{{ movement.productSKU }}</small>
+                  </div>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="type">
+                <th mat-header-cell *matHeaderCellDef>Type</th>
+                <td mat-cell *matCellDef="let movement">
+                  <mat-chip [class]="getMovementTypeClass(movement.movementType)">
+                    {{ getMovementTypeLabel(movement.movementType) }}
+                  </mat-chip>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="quantity">
+                <th mat-header-cell *matHeaderCellDef>Quantity</th>
+                <td mat-cell *matCellDef="let movement">
+                  <span [class]="getQuantityClass(movement)">
+                    {{ formatQuantity(movement) }}
+                  </span>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="previousStock">
+                <th mat-header-cell *matHeaderCellDef>Previous</th>
+                <td mat-cell *matCellDef="let movement">
+                  {{ movement.previousStock }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="newStock">
+                <th mat-header-cell *matHeaderCellDef>New Stock</th>
+                <td mat-cell *matCellDef="let movement">
+                  <strong>{{ movement.newStock }}</strong>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="user">
+                <th mat-header-cell *matHeaderCellDef>User</th>
+                <td mat-cell *matCellDef="let movement">
+                  {{ movement.userName }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="reason">
+                <th mat-header-cell *matHeaderCellDef>Reason / Notes</th>
+                <td mat-cell *matCellDef="let movement">
+                  <div class="reason-cell">
+                    @if (movement.reason) {
+                      <div class="reason">{{ movement.reason }}</div>
+                    }
+                    @if (movement.notes) {
+                      <div class="notes">{{ movement.notes }}</div>
+                    }
+                    @if (movement.fromLocation || movement.toLocation) {
+                      <div class="location">
+                        @if (movement.fromLocation) {
+                          <span>From: {{ movement.fromLocation }}</span>
+                        }
+                        @if (movement.toLocation) {
+                          <span>To: {{ movement.toLocation }}</span>
+                        }
+                      </div>
+                    }
+                    @if (!movement.reason && !movement.notes && !movement.fromLocation && !movement.toLocation) {
+                      <span class="no-info">-</span>
+                    }
+                  </div>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            </table>
+          </div>
+        } @else {
+          <div class="no-data">
+            <mat-icon>swap_horiz</mat-icon>
+            <p>No stock movements found</p>
+            @if (searchTerm || selectedType !== 'all' || startDate || endDate) {
+              <p class="hint">Try adjusting your filters</p>
+              <button mat-raised-button color="primary" (click)="clearFilters()">
+                Clear Filters
+              </button>
+            } @else {
+              <p class="hint">Stock movements will appear here once products are added or updated</p>
+            }
+          </div>
+        }
+      }
+    </mat-card-content>
+  </mat-card>
+</div>
