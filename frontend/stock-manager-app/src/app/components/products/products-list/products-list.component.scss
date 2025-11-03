@@ -17,11 +17,16 @@
     letter-spacing: -0.5px;
   }
 
-  button {
-    border-radius: 8px;
+  .header-actions {
+    display: flex;
+    gap: 12px;
 
-    mat-icon {
-      margin-right: 8px;
+    button {
+      border-radius: 8px;
+
+      mat-icon {
+        margin-right: 8px;
+      }
     }
   }
 }

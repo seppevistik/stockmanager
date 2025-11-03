@@ -35,6 +35,11 @@ export const routes: Routes = [
         data: { roles: [UserRole.Admin, UserRole.Manager, UserRole.Staff] }
       },
       {
+        path: 'products/bulk-adjust',
+        loadComponent: () => import('./components/products/bulk-stock-adjustment/bulk-stock-adjustment.component').then(m => m.BulkStockAdjustmentComponent),
+        data: { roles: [UserRole.Admin, UserRole.Manager, UserRole.Staff] }
+      },
+      {
         path: 'stock-movements',
         loadComponent: () => import('./components/stock-movements/stock-movements-list/stock-movements-list.component').then(m => m.StockMovementsListComponent)
       },

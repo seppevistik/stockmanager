@@ -1,0 +1,116 @@
+<div class="bulk-adjustment-container">
+  <div class="bulk-adjustment-header">
+    <div class="header-left">
+      <button mat-icon-button (click)="cancel()">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <h1>Bulk Stock Adjustment</h1>
+    </div>
+    <div class="header-right">
+      @if (hasChanges()) {
+        <span class="change-count">{{ getChangedAdjustments().length }} product(s) modified</span>
+      }
+      <button mat-button (click)="cancel()" [disabled]="saving">
+        Cancel
+      </button>
+      <button mat-raised-button color="primary" (click)="saveChanges()" [disabled]="saving || !hasChanges()">
+        @if (saving) {
+          <mat-spinner diameter="20"></mat-spinner>
+        } @else {
+          <ng-container>
+            <mat-icon>save</mat-icon>
+            Save Changes
+          </ng-container>
+        }
+      </button>
+    </div>
+  </div>
+
+  <mat-card>
+    <mat-card-content>
+      <div class="instructions">
+        <mat-icon>info</mat-icon>
+        <p>Enter the new stock quantity for each product you want to update. Leave blank to keep current stock unchanged.</p>
+      </div>
+
+      @if (errorMessage) {
+        <div class="error-message">
+          {{ errorMessage }}
+        </div>
+      }
+
+      @if (loading) {
+        <div class="loading-spinner">
+          <mat-spinner></mat-spinner>
+        </div>
+      } @else {
+        @if (adjustments.length > 0) {
+          <div class="table-container">
+            <table mat-table [dataSource]="adjustments" class="adjustment-table">
+              <ng-container matColumnDef="sku">
+                <th mat-header-cell *matHeaderCellDef>SKU</th>
+                <td mat-cell *matCellDef="let adjustment">
+                  {{ adjustment.product.sku }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="name">
+                <th mat-header-cell *matHeaderCellDef>Product Name</th>
+                <td mat-cell *matCellDef="let adjustment">
+                  <div class="product-name">
+                    <strong>{{ adjustment.product.name }}</strong>
+                    @if (adjustment.product.description) {
+                      <small>{{ adjustment.product.description }}</small>
+                    }
+                  </div>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="currentStock">
+                <th mat-header-cell *matHeaderCellDef>Current Stock</th>
+                <td mat-cell *matCellDef="let adjustment">
+                  <span class="current-stock">
+                    {{ adjustment.product.currentStock }} {{ adjustment.product.unitOfMeasurement }}
+                  </span>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="newStock">
+                <th mat-header-cell *matHeaderCellDef>New Stock</th>
+                <td mat-cell *matCellDef="let adjustment">
+                  <mat-form-field appearance="outline" class="stock-input">
+                    <input
+                      matInput
+                      type="number"
+                      [(ngModel)]="adjustment.newStock"
+                      (ngModelChange)="onStockChange(adjustment)"
+                      [placeholder]="adjustment.product.currentStock.toString()"
+                      min="0">
+                    <span matTextSuffix>{{ adjustment.product.unitOfMeasurement }}</span>
+                  </mat-form-field>
+                  @if (adjustment.changed && adjustment.newStock !== null) {
+                    <div class="change-indicator">
+                      @if (adjustment.newStock > adjustment.product.currentStock) {
+                        <span class="increase">+{{ adjustment.newStock - adjustment.product.currentStock }}</span>
+                      } @else if (adjustment.newStock < adjustment.product.currentStock) {
+                        <span class="decrease">{{ adjustment.newStock - adjustment.product.currentStock }}</span>
+                      }
+                    </div>
+                  }
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns;" [class.row-changed]="row.changed"></tr>
+            </table>
+          </div>
+        } @else {
+          <div class="no-data">
+            <mat-icon>inventory_2</mat-icon>
+            <p>No active products found</p>
+          </div>
+        }
+      }
+    </mat-card-content>
+  </mat-card>
+</div>

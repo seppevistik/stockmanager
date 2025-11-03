@@ -101,6 +101,10 @@ export class ProductsListComponent implements OnInit {
     this.router.navigate(['/products/new']);
   }
 
+  bulkAdjustStock(): void {
+    this.router.navigate(['/products/bulk-adjust']);
+  }
+
   editProduct(product: Product): void {
     this.router.navigate(['/products/edit', product.id]);
   }
