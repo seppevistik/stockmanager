@@ -3,6 +3,18 @@ export enum ProductStatus {
   Inactive = 'Inactive'
 }
 
+export interface ProductSupplier {
+  id: number;
+  productId: number;
+  companyId: number;
+  companyName: string;
+  supplierPrice?: number;
+  supplierProductCode?: string;
+  leadTimeDays?: number;
+  minimumOrderQuantity?: number;
+  isPrimarySupplier: boolean;
+}
+
 export interface Product {
   id: number;
   name: string;
@@ -20,6 +32,7 @@ export interface Product {
   status: ProductStatus;
   location?: string;
   createdAt: Date;
+  suppliers: ProductSupplier[];
 }
 
 export interface CreateProductRequest {
@@ -44,4 +57,13 @@ export interface StockAdjustment {
 export interface BulkStockAdjustment {
   adjustments: StockAdjustment[];
   reason: string;
+}
+
+export interface CreateProductSupplier {
+  companyId: number;
+  supplierPrice?: number;
+  supplierProductCode?: string;
+  leadTimeDays?: number;
+  minimumOrderQuantity?: number;
+  isPrimarySupplier: boolean;
 }

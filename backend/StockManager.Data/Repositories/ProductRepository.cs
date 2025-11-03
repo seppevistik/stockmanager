@@ -15,6 +15,8 @@ public class ProductRepository : GenericRepository<Product>, IProductRepository
     {
         return await _dbSet
             .Include(p => p.Category)
+            .Include(p => p.ProductSuppliers)
+                .ThenInclude(ps => ps.Company)
             .Where(p => p.BusinessId == businessId)
             .OrderBy(p => p.Name)
             .ToListAsync();
@@ -24,6 +26,8 @@ public class ProductRepository : GenericRepository<Product>, IProductRepository
     {
         return await _dbSet
             .Include(p => p.Category)
+            .Include(p => p.ProductSuppliers)
+                .ThenInclude(ps => ps.Company)
             .FirstOrDefaultAsync(p => p.SKU == sku && p.BusinessId == businessId);
     }
 

@@ -202,6 +202,119 @@ public class ProductService
         return (true, errors.Any() ? string.Join("; ", errors) : null, updatedCount);
     }
 
+    public virtual async Task<(bool Success, string? Error)> AddProductSupplierAsync(
+        int productId,
+        CreateProductSupplierDto supplierDto,
+        int businessId)
+    {
+        var product = await _unitOfWork.Products.GetByIdAsync(productId);
+        if (product == null || product.BusinessId != businessId)
+        {
+            return (false, "Product not found");
+        }
+
+        var company = await _unitOfWork.Companies.GetByIdAsync(supplierDto.CompanyId);
+        if (company == null || company.BusinessId != businessId || !company.IsSupplier)
+        {
+            return (false, "Invalid supplier");
+        }
+
+        // Check if supplier already linked
+        var existingLink = product.ProductSuppliers.FirstOrDefault(ps => ps.CompanyId == supplierDto.CompanyId);
+        if (existingLink != null)
+        {
+            return (false, "Supplier already linked to this product");
+        }
+
+        // If this is marked as primary, remove primary flag from others
+        if (supplierDto.IsPrimarySupplier)
+        {
+            foreach (var ps in product.ProductSuppliers)
+            {
+                ps.IsPrimarySupplier = false;
+            }
+        }
+
+        var productSupplier = new ProductSupplier
+        {
+            ProductId = productId,
+            CompanyId = supplierDto.CompanyId,
+            SupplierPrice = supplierDto.SupplierPrice,
+            SupplierProductCode = supplierDto.SupplierProductCode,
+            LeadTimeDays = supplierDto.LeadTimeDays,
+            MinimumOrderQuantity = supplierDto.MinimumOrderQuantity,
+            IsPrimarySupplier = supplierDto.IsPrimarySupplier,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        product.ProductSuppliers.Add(productSupplier);
+        await _unitOfWork.SaveChangesAsync();
+
+        return (true, null);
+    }
+
+    public virtual async Task<(bool Success, string? Error)> UpdateProductSupplierAsync(
+        int productId,
+        int supplierLinkId,
+        CreateProductSupplierDto supplierDto,
+        int businessId)
+    {
+        var product = await _unitOfWork.Products.GetByIdAsync(productId);
+        if (product == null || product.BusinessId != businessId)
+        {
+            return (false, "Product not found");
+        }
+
+        var productSupplier = product.ProductSuppliers.FirstOrDefault(ps => ps.Id == supplierLinkId);
+        if (productSupplier == null)
+        {
+            return (false, "Supplier link not found");
+        }
+
+        // If this is being marked as primary, remove primary flag from others
+        if (supplierDto.IsPrimarySupplier && !productSupplier.IsPrimarySupplier)
+        {
+            foreach (var ps in product.ProductSuppliers.Where(ps => ps.Id != supplierLinkId))
+            {
+                ps.IsPrimarySupplier = false;
+            }
+        }
+
+        productSupplier.SupplierPrice = supplierDto.SupplierPrice;
+        productSupplier.SupplierProductCode = supplierDto.SupplierProductCode;
+        productSupplier.LeadTimeDays = supplierDto.LeadTimeDays;
+        productSupplier.MinimumOrderQuantity = supplierDto.MinimumOrderQuantity;
+        productSupplier.IsPrimarySupplier = supplierDto.IsPrimarySupplier;
+        productSupplier.UpdatedAt = DateTime.UtcNow;
+
+        await _unitOfWork.SaveChangesAsync();
+
+        return (true, null);
+    }
+
+    public virtual async Task<(bool Success, string? Error)> RemoveProductSupplierAsync(
+        int productId,
+        int supplierLinkId,
+        int businessId)
+    {
+        var product = await _unitOfWork.Products.GetByIdAsync(productId);
+        if (product == null || product.BusinessId != businessId)
+        {
+            return (false, "Product not found");
+        }
+
+        var productSupplier = product.ProductSuppliers.FirstOrDefault(ps => ps.Id == supplierLinkId);
+        if (productSupplier == null)
+        {
+            return (false, "Supplier link not found");
+        }
+
+        product.ProductSuppliers.Remove(productSupplier);
+        await _unitOfWork.SaveChangesAsync();
+
+        return (true, null);
+    }
+
     private ProductDto MapToDto(Product product)
     {
         return new ProductDto
@@ -221,7 +334,19 @@ public class ProductService
             TotalValue = product.CurrentStock * product.CostPerUnit,
             Status = product.Status,
             Location = product.Location,
-            CreatedAt = product.CreatedAt
+            CreatedAt = product.CreatedAt,
+            Suppliers = product.ProductSuppliers?.Select(ps => new ProductSupplierDto
+            {
+                Id = ps.Id,
+                ProductId = ps.ProductId,
+                CompanyId = ps.CompanyId,
+                CompanyName = ps.Company?.Name ?? "",
+                SupplierPrice = ps.SupplierPrice,
+                SupplierProductCode = ps.SupplierProductCode,
+                LeadTimeDays = ps.LeadTimeDays,
+                MinimumOrderQuantity = ps.MinimumOrderQuantity,
+                IsPrimarySupplier = ps.IsPrimarySupplier
+            }).ToList() ?? new List<ProductSupplierDto>()
         };
     }
 }

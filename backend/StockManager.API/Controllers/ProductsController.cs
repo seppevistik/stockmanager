@@ -111,4 +111,49 @@ public class ProductsController : ControllerBase
 
         return Ok(new { message = $"Successfully updated {result.UpdatedCount} products", updatedCount = result.UpdatedCount });
     }
+
+    [HttpPost("{productId}/suppliers")]
+    [Authorize(Roles = "Admin,Manager,Staff")]
+    public async Task<IActionResult> AddProductSupplier(int productId, [FromBody] CreateProductSupplierDto supplierDto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var businessId = GetBusinessId();
+        var result = await _productService.AddProductSupplierAsync(productId, supplierDto, businessId);
+
+        if (!result.Success)
+            return BadRequest(new { message = result.Error });
+
+        return Ok(new { message = "Supplier added successfully" });
+    }
+
+    [HttpPut("{productId}/suppliers/{supplierLinkId}")]
+    [Authorize(Roles = "Admin,Manager,Staff")]
+    public async Task<IActionResult> UpdateProductSupplier(int productId, int supplierLinkId, [FromBody] CreateProductSupplierDto supplierDto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var businessId = GetBusinessId();
+        var result = await _productService.UpdateProductSupplierAsync(productId, supplierLinkId, supplierDto, businessId);
+
+        if (!result.Success)
+            return BadRequest(new { message = result.Error });
+
+        return NoContent();
+    }
+
+    [HttpDelete("{productId}/suppliers/{supplierLinkId}")]
+    [Authorize(Roles = "Admin,Manager,Staff")]
+    public async Task<IActionResult> RemoveProductSupplier(int productId, int supplierLinkId)
+    {
+        var businessId = GetBusinessId();
+        var result = await _productService.RemoveProductSupplierAsync(productId, supplierLinkId, businessId);
+
+        if (!result.Success)
+            return BadRequest(new { message = result.Error });
+
+        return NoContent();
+    }
 }

@@ -20,4 +20,5 @@ public class ProductDto
     public ProductStatus Status { get; set; }
     public string? Location { get; set; }
     public DateTime CreatedAt { get; set; }
+    public List<ProductSupplierDto> Suppliers { get; set; } = new();
 }
