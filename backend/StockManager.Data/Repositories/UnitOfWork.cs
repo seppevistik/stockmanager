@@ -9,6 +9,8 @@ public class UnitOfWork : IUnitOfWork
     private IProductRepository? _products;
     private IStockMovementRepository? _stockMovements;
     private ICompanyRepository? _companies;
+    private IPurchaseOrderRepository? _purchaseOrders;
+    private IReceiptRepository? _receipts;
 
     public UnitOfWork(ApplicationDbContext context)
     {
@@ -20,6 +22,10 @@ public class UnitOfWork : IUnitOfWork
     public IStockMovementRepository StockMovements => _stockMovements ??= new StockMovementRepository(_context);
 
     public ICompanyRepository Companies => _companies ??= new CompanyRepository(_context);
+
+    public IPurchaseOrderRepository PurchaseOrders => _purchaseOrders ??= new PurchaseOrderRepository(_context);
+
+    public IReceiptRepository Receipts => _receipts ??= new ReceiptRepository(_context);
 
     public async Task<int> SaveChangesAsync()
     {
