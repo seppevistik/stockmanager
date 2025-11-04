@@ -1,0 +1,138 @@
+<div class="container">
+  <div class="header">
+    <h1>Purchase Orders</h1>
+    <button mat-raised-button color="primary" (click)="createPurchaseOrder()">
+      <mat-icon>add</mat-icon>
+      New Purchase Order
+    </button>
+  </div>
+
+  <mat-card>
+    <mat-card-content>
+      <!-- Filters -->
+      <div class="filters">
+        <mat-form-field appearance="outline">
+          <mat-label>Search</mat-label>
+          <input matInput [(ngModel)]="searchTerm" (keyup.enter)="applyFilters()" placeholder="Order # or supplier">
+          <mat-icon matPrefix>search</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Status</mat-label>
+          <mat-select [(ngModel)]="statusFilter" (selectionChange)="applyFilters()">
+            @for (status of statusOptions; track status.value) {
+              <mat-option [value]="status.value">{{ status.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Supplier</mat-label>
+          <mat-select [(ngModel)]="supplierFilter" (selectionChange)="applyFilters()">
+            <mat-option value="">All Suppliers</mat-option>
+            @for (supplier of suppliers; track supplier.id) {
+              <mat-option [value]="supplier.id">{{ supplier.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <button mat-stroked-button (click)="clearFilters()">
+          <mat-icon>clear</mat-icon>
+          Clear Filters
+        </button>
+      </div>
+
+      <!-- Loading Spinner -->
+      @if (loading) {
+        <div class="loading-spinner">
+          <mat-spinner></mat-spinner>
+        </div>
+      }
+
+      <!-- Table -->
+      @if (!loading && filteredPurchaseOrders.length > 0) {
+        <div class="table-container">
+          <table mat-table [dataSource]="filteredPurchaseOrders" class="purchase-orders-table">
+            <!-- Order Number Column -->
+            <ng-container matColumnDef="orderNumber">
+              <th mat-header-cell *matHeaderCellDef>Order #</th>
+              <td mat-cell *matCellDef="let order">{{ order.orderNumber }}</td>
+            </ng-container>
+
+            <!-- Order Date Column -->
+            <ng-container matColumnDef="orderDate">
+              <th mat-header-cell *matHeaderCellDef>Order Date</th>
+              <td mat-cell *matCellDef="let order">{{ order.orderDate | date:'short' }}</td>
+            </ng-container>
+
+            <!-- Supplier Column -->
+            <ng-container matColumnDef="companyName">
+              <th mat-header-cell *matHeaderCellDef>Supplier</th>
+              <td mat-cell *matCellDef="let order">{{ order.companyName }}</td>
+            </ng-container>
+
+            <!-- Expected Delivery Column -->
+            <ng-container matColumnDef="expectedDeliveryDate">
+              <th mat-header-cell *matHeaderCellDef>Expected Delivery</th>
+              <td mat-cell *matCellDef="let order">
+                {{ order.expectedDeliveryDate ? (order.expectedDeliveryDate | date:'shortDate') : '-' }}
+              </td>
+            </ng-container>
+
+            <!-- Status Column -->
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef>Status</th>
+              <td mat-cell *matCellDef="let order">
+                <mat-chip [color]="getStatusColor(order.status)">
+                  {{ order.status }}
+                </mat-chip>
+              </td>
+            </ng-container>
+
+            <!-- Total Amount Column -->
+            <ng-container matColumnDef="totalAmount">
+              <th mat-header-cell *matHeaderCellDef>Total</th>
+              <td mat-cell *matCellDef="let order">{{ order.totalAmount | currency }}</td>
+            </ng-container>
+
+            <!-- Actions Column -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>Actions</th>
+              <td mat-cell *matCellDef="let order">
+                <button mat-icon-button (click)="viewPurchaseOrder(order.id)" matTooltip="View">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+                @if (canEdit(order)) {
+                  <button mat-icon-button (click)="editPurchaseOrder(order.id)" matTooltip="Edit">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                }
+                @if (canDelete(order)) {
+                  <button mat-icon-button (click)="deletePurchaseOrder(order.id)" matTooltip="Delete" color="warn">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                }
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="clickable-row"></tr>
+          </table>
+        </div>
+      }
+
+      <!-- Empty State -->
+      @if (!loading && filteredPurchaseOrders.length === 0) {
+        <div class="empty-state">
+          <mat-icon>shopping_cart</mat-icon>
+          <h3>No Purchase Orders Found</h3>
+          <p>Create your first purchase order to get started.</p>
+          <button mat-raised-button color="primary" (click)="createPurchaseOrder()">
+            <mat-icon>add</mat-icon>
+            Create Purchase Order
+          </button>
+        </div>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>
