@@ -58,6 +58,10 @@ export const routes: Routes = [
         data: { roles: [UserRole.Admin, UserRole.Manager] }
       },
       {
+        path: 'purchase-orders',
+        loadComponent: () => import('./components/purchase-orders/purchase-orders-list/purchase-orders-list.component').then(m => m.PurchaseOrdersListComponent)
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full'
