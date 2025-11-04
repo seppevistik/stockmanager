@@ -1,0 +1,174 @@
+<div class="form-container">
+  <div class="form-header">
+    <button mat-icon-button (click)="cancel()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1>{{ isEditMode ? 'Edit Purchase Order' : 'New Purchase Order' }}</h1>
+  </div>
+
+  @if (loading) {
+    <div class="loading-spinner">
+      <mat-spinner></mat-spinner>
+    </div>
+  } @else {
+    <mat-card>
+      <mat-card-content>
+        <form [formGroup]="purchaseOrderForm" (ngSubmit)="onSubmit()">
+          <!-- Supplier and Date -->
+          <div class="form-row two-columns">
+            <mat-form-field appearance="outline">
+              <mat-label>Supplier</mat-label>
+              <mat-select formControlName="companyId" required>
+                @for (supplier of suppliers; track supplier.id) {
+                  <mat-option [value]="supplier.id">{{ supplier.name }}</mat-option>
+                }
+              </mat-select>
+              <mat-error>Please select a supplier</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Expected Delivery Date</mat-label>
+              <input matInput [matDatepicker]="picker" formControlName="expectedDeliveryDate">
+              <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+            </mat-form-field>
+          </div>
+
+          <!-- Supplier Reference and Notes -->
+          <div class="form-row two-columns">
+            <mat-form-field appearance="outline">
+              <mat-label>Supplier Reference</mat-label>
+              <input matInput formControlName="supplierReference" placeholder="Optional">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Notes</mat-label>
+              <input matInput formControlName="notes" placeholder="Optional">
+            </mat-form-field>
+          </div>
+
+          <!-- Line Items -->
+          <div class="line-items-section">
+            <div class="section-header">
+              <h3>Line Items</h3>
+              <button mat-raised-button type="button" color="primary" (click)="addLineItem()">
+                <mat-icon>add</mat-icon>
+                Add Item
+              </button>
+            </div>
+
+            <div formArrayName="lines" class="line-items-container">
+              @for (line of lines.controls; track $index; let i = $index) {
+                <mat-card class="line-item-card" [formGroupName]="i">
+                  <mat-card-content>
+                    <div class="line-item-header">
+                      <h4>Item {{ i + 1 }}</h4>
+                      @if (lines.length > 1) {
+                        <button mat-icon-button type="button" (click)="removeLineItem(i)" color="warn">
+                          <mat-icon>delete</mat-icon>
+                        </button>
+                      }
+                    </div>
+
+                    <div class="line-item-fields">
+                      <mat-form-field appearance="outline" class="product-field">
+                        <mat-label>Product</mat-label>
+                        <mat-select formControlName="productId" (selectionChange)="onProductSelect(i)" required>
+                          @for (product of products; track product.id) {
+                            <mat-option [value]="product.id">
+                              {{ product.name }} ({{ product.sku }})
+                            </mat-option>
+                          }
+                        </mat-select>
+                        <mat-error>Please select a product</mat-error>
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Quantity</mat-label>
+                        <input matInput type="number" formControlName="quantityOrdered" min="1" required>
+                        <mat-error>Quantity must be at least 1</mat-error>
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Unit Price</mat-label>
+                        <input matInput type="number" formControlName="unitPrice" min="0" step="0.01" required>
+                        <mat-error>Price must be 0 or greater</mat-error>
+                      </mat-form-field>
+
+                      <div class="line-total">
+                        <strong>Line Total:</strong> {{ getLineTotal(i) | currency }}
+                      </div>
+                    </div>
+
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>Notes</mat-label>
+                      <input matInput formControlName="notes" placeholder="Optional">
+                    </mat-form-field>
+                  </mat-card-content>
+                </mat-card>
+              }
+            </div>
+          </div>
+
+          <!-- Totals Section -->
+          <div class="totals-section">
+            <div class="form-row two-columns">
+              <mat-form-field appearance="outline">
+                <mat-label>Tax Amount</mat-label>
+                <input matInput type="number" formControlName="taxAmount" min="0" step="0.01" required>
+                <mat-error>Tax must be 0 or greater</mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Shipping Cost</mat-label>
+                <input matInput type="number" formControlName="shippingCost" min="0" step="0.01" required>
+                <mat-error>Shipping must be 0 or greater</mat-error>
+              </mat-form-field>
+            </div>
+
+            <div class="totals-display">
+              <div class="total-row">
+                <span>Subtotal:</span>
+                <span>{{ calculateSubTotal() | currency }}</span>
+              </div>
+              <div class="total-row">
+                <span>Tax:</span>
+                <span>{{ purchaseOrderForm.get('taxAmount')?.value | currency }}</span>
+              </div>
+              <div class="total-row">
+                <span>Shipping:</span>
+                <span>{{ purchaseOrderForm.get('shippingCost')?.value | currency }}</span>
+              </div>
+              <div class="total-row grand-total">
+                <span>Total:</span>
+                <span>{{ calculateTotal() | currency }}</span>
+              </div>
+            </div>
+          </div>
+
+          @if (errorMessage) {
+            <div class="error-message">
+              {{ errorMessage }}
+            </div>
+          }
+
+          <div class="form-actions">
+            <button mat-button type="button" (click)="cancel()" [disabled]="saving">
+              Cancel
+            </button>
+            <button mat-raised-button color="primary" type="submit" [disabled]="saving || purchaseOrderForm.invalid">
+              @if (saving) {
+                <mat-spinner diameter="20"></mat-spinner>
+              } @else {
+                <ng-container>
+                  <mat-icon>save</mat-icon>
+                  {{ isEditMode ? 'Update Purchase Order' : 'Create Purchase Order' }}
+                </ng-container>
+              }
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

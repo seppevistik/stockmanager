@@ -62,6 +62,21 @@ export const routes: Routes = [
         loadComponent: () => import('./components/purchase-orders/purchase-orders-list/purchase-orders-list.component').then(m => m.PurchaseOrdersListComponent)
       },
       {
+        path: 'purchase-orders/new',
+        loadComponent: () => import('./components/purchase-orders/purchase-order-form/purchase-order-form.component').then(m => m.PurchaseOrderFormComponent),
+        data: { roles: [UserRole.Admin, UserRole.Manager] }
+      },
+      {
+        path: 'purchase-orders/edit/:id',
+        loadComponent: () => import('./components/purchase-orders/purchase-order-form/purchase-order-form.component').then(m => m.PurchaseOrderFormComponent),
+        data: { roles: [UserRole.Admin, UserRole.Manager] }
+      },
+      {
+        path: 'receipts/new',
+        loadComponent: () => import('./components/receipts/receipt-form/receipt-form.component').then(m => m.ReceiptFormComponent),
+        data: { roles: [UserRole.Admin, UserRole.Manager, UserRole.Staff] }
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full'
