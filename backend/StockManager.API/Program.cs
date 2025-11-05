@@ -122,6 +122,7 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 // Register Services
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<StockMovementService>();
 builder.Services.AddScoped<CompanyService>();
