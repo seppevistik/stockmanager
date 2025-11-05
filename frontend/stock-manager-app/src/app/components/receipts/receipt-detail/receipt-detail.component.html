@@ -1,0 +1,231 @@
+<div class="receipt-detail-container">
+  <div class="header">
+    <button mat-icon-button (click)="back()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1>Receipt Details</h1>
+  </div>
+
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner></mat-spinner>
+  </div>
+
+  <div *ngIf="!loading && receipt">
+    <!-- Header Information Card -->
+    <mat-card class="info-card">
+      <mat-card-header>
+        <mat-card-title>
+          {{ receipt.receiptNumber }}
+          <mat-chip [color]="getStatusColor(receipt.status)">
+            {{ receipt.status }}
+          </mat-chip>
+          <mat-chip *ngIf="receipt.hasVariances" color="warn">
+            <mat-icon>warning</mat-icon> Has Variances
+          </mat-chip>
+        </mat-card-title>
+        <mat-card-subtitle>
+          Purchase Order:
+          <a class="link" (click)="viewPurchaseOrder()">{{ receipt.purchaseOrderNumber }}</a>
+        </mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="info-grid">
+          <div class="info-item">
+            <label>Supplier:</label>
+            <span>{{ receipt.companyName }}</span>
+          </div>
+          <div class="info-item">
+            <label>Receipt Date:</label>
+            <span>{{ receipt.receiptDate | date: 'mediumDate' }}</span>
+          </div>
+          <div class="info-item">
+            <label>Received By:</label>
+            <span>{{ receipt.receivedByName }}</span>
+          </div>
+          <div class="info-item">
+            <label>Created At:</label>
+            <span>{{ receipt.createdAt | date: 'medium' }}</span>
+          </div>
+          <div class="info-item" *ngIf="receipt.supplierDeliveryNote">
+            <label>Supplier Delivery Note:</label>
+            <span>{{ receipt.supplierDeliveryNote }}</span>
+          </div>
+          <div class="info-item" *ngIf="receipt.validatedByName">
+            <label>Validated By:</label>
+            <span>{{ receipt.validatedByName }}</span>
+          </div>
+          <div class="info-item" *ngIf="receipt.validatedAt">
+            <label>Validated At:</label>
+            <span>{{ receipt.validatedAt | date: 'medium' }}</span>
+          </div>
+          <div class="info-item" *ngIf="receipt.completedAt">
+            <label>Completed At:</label>
+            <span>{{ receipt.completedAt | date: 'medium' }}</span>
+          </div>
+        </div>
+        <div class="info-item full-width" *ngIf="receipt.notes">
+          <label>Notes:</label>
+          <p>{{ receipt.notes }}</p>
+        </div>
+        <div class="info-item full-width" *ngIf="receipt.varianceNotes">
+          <label>Variance Notes:</label>
+          <p class="variance-text">{{ receipt.varianceNotes }}</p>
+        </div>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-raised-button color="primary" *ngIf="canApprove()" (click)="onApprove()" [disabled]="actionInProgress">
+          <mat-icon>check_circle</mat-icon> Approve
+        </button>
+        <button mat-raised-button color="warn" *ngIf="canReject()" (click)="onReject()" [disabled]="actionInProgress">
+          <mat-icon>cancel</mat-icon> Reject
+        </button>
+        <button mat-raised-button color="accent" *ngIf="canComplete()" (click)="onComplete()" [disabled]="actionInProgress">
+          <mat-icon>done_all</mat-icon> Complete & Update Inventory
+        </button>
+        <button mat-button color="warn" *ngIf="canDelete()" (click)="onDelete()" [disabled]="actionInProgress">
+          <mat-icon>delete</mat-icon> Delete
+        </button>
+      </mat-card-actions>
+    </mat-card>
+
+    <!-- Variance Summary (if exists) -->
+    <mat-card class="variance-card" *ngIf="validation && validation.hasVariances">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon color="warn">warning</mat-icon>
+          Variance Summary
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="variance-list">
+          <div *ngFor="let variance of validation.variances" class="variance-item">
+            <div class="variance-header">
+              <strong>{{ variance.productName }}</strong>
+              <mat-chip [color]="getConditionColor(variance.condition)" class="condition-chip">
+                {{ variance.condition }}
+              </mat-chip>
+            </div>
+            <div class="variance-details">
+              <div class="variance-detail">
+                <span class="label">Ordered:</span>
+                <span>{{ variance.quantityOrdered }}</span>
+              </div>
+              <div class="variance-detail">
+                <span class="label">Received:</span>
+                <span>{{ variance.quantityReceived }}</span>
+              </div>
+              <div class="variance-detail">
+                <span class="label">Variance:</span>
+                <span [class.negative]="variance.quantityVariance < 0" [class.positive]="variance.quantityVariance > 0">
+                  {{ variance.quantityVariance > 0 ? '+' : '' }}{{ variance.quantityVariance }}
+                </span>
+              </div>
+              <div class="variance-detail" *ngIf="variance.priceVariance">
+                <span class="label">Price Variance:</span>
+                <span [class.negative]="variance.priceVariance! < 0" [class.positive]="variance.priceVariance! > 0">
+                  {{ variance.priceVariance! > 0 ? '+' : '' }}{{ variance.priceVariance | currency }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Receipt Lines -->
+    <mat-card class="lines-card">
+      <mat-card-header>
+        <mat-card-title>Receipt Lines</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <table mat-table [dataSource]="receipt.lines" class="full-width">
+          <!-- Product SKU Column -->
+          <ng-container matColumnDef="productSku">
+            <th mat-header-cell *matHeaderCellDef>SKU</th>
+            <td mat-cell *matCellDef="let line">{{ line.productSku }}</td>
+          </ng-container>
+
+          <!-- Product Name Column -->
+          <ng-container matColumnDef="productName">
+            <th mat-header-cell *matHeaderCellDef>Product</th>
+            <td mat-cell *matCellDef="let line">
+              <div>{{ line.productName }}</div>
+              <div class="line-details" *ngIf="line.location || line.batchNumber || line.expiryDate">
+                <small *ngIf="line.location">Location: {{ line.location }}</small>
+                <small *ngIf="line.batchNumber">Batch: {{ line.batchNumber }}</small>
+                <small *ngIf="line.expiryDate">Expires: {{ line.expiryDate | date: 'shortDate' }}</small>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Quantity Ordered Column -->
+          <ng-container matColumnDef="quantityOrdered">
+            <th mat-header-cell *matHeaderCellDef>Ordered</th>
+            <td mat-cell *matCellDef="let line">{{ line.quantityOrdered }}</td>
+          </ng-container>
+
+          <!-- Quantity Received Column -->
+          <ng-container matColumnDef="quantityReceived">
+            <th mat-header-cell *matHeaderCellDef>Received</th>
+            <td mat-cell *matCellDef="let line">{{ line.quantityReceived }}</td>
+          </ng-container>
+
+          <!-- Quantity Variance Column -->
+          <ng-container matColumnDef="quantityVariance">
+            <th mat-header-cell *matHeaderCellDef>Variance</th>
+            <td mat-cell *matCellDef="let line">
+              <span [class.negative]="line.quantityVariance < 0" [class.positive]="line.quantityVariance > 0">
+                {{ line.quantityVariance > 0 ? '+' : '' }}{{ line.quantityVariance }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Unit Price Ordered Column -->
+          <ng-container matColumnDef="unitPriceOrdered">
+            <th mat-header-cell *matHeaderCellDef>Price (Ordered)</th>
+            <td mat-cell *matCellDef="let line">{{ line.unitPriceOrdered | currency }}</td>
+          </ng-container>
+
+          <!-- Unit Price Received Column -->
+          <ng-container matColumnDef="unitPriceReceived">
+            <th mat-header-cell *matHeaderCellDef>Price (Received)</th>
+            <td mat-cell *matCellDef="let line">
+              {{ line.unitPriceReceived ? (line.unitPriceReceived | currency) : '-' }}
+            </td>
+          </ng-container>
+
+          <!-- Price Variance Column -->
+          <ng-container matColumnDef="priceVariance">
+            <th mat-header-cell *matHeaderCellDef>Price Variance</th>
+            <td mat-cell *matCellDef="let line">
+              <span *ngIf="line.priceVariance !== 0" [class.negative]="line.priceVariance < 0" [class.positive]="line.priceVariance > 0">
+                {{ line.priceVariance > 0 ? '+' : '' }}{{ line.priceVariance | currency }}
+              </span>
+              <span *ngIf="line.priceVariance === 0">-</span>
+            </td>
+          </ng-container>
+
+          <!-- Condition Column -->
+          <ng-container matColumnDef="condition">
+            <th mat-header-cell *matHeaderCellDef>Condition</th>
+            <td mat-cell *matCellDef="let line">
+              <mat-chip [color]="getConditionColor(line.condition)" class="condition-chip">
+                {{ line.condition }}
+              </mat-chip>
+              <div *ngIf="line.damageNotes" class="damage-notes">
+                <small>{{ line.damageNotes }}</small>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div *ngIf="!loading && !receipt" class="error-container">
+    <p>Receipt not found</p>
+  </div>
+</div>
