@@ -21,6 +21,8 @@ export interface RegisterRequest {
 
 export interface AuthResponse {
   token: string;
+  refreshToken: string;
+  expiresAt: Date;
   userId: string;
   email: string;
   firstName: string;
@@ -31,6 +33,16 @@ export interface AuthResponse {
 }
 
 export interface User extends AuthResponse {}
+
+export interface RefreshTokenRequest {
+  refreshToken: string;
+}
+
+export interface RefreshTokenResponse {
+  token: string;
+  refreshToken: string;
+  expiresAt: Date;
+}
 
 export interface UserProfile {
   userId: string;

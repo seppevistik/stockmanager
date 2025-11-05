@@ -31,7 +31,7 @@ public class AuthService
         _emailService = emailService;
     }
 
-    public async Task<(bool Success, string? Error, AuthResponseDto? Response)> RegisterAsync(RegisterDto registerDto)
+    public async Task<(bool Success, string? Error, AuthResponseDto? Response)> RegisterAsync(RegisterDto registerDto, string ipAddress = "")
     {
         // Check if user already exists
         var existingUser = await _userManager.FindByEmailAsync(registerDto.Email);
@@ -60,7 +60,8 @@ public class AuthService
             BusinessId = business.Id,
             Role = registerDto.Role,
             IsActive = true,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            LastLoginAt = DateTime.UtcNow
         };
 
         var result = await _userManager.CreateAsync(user, registerDto.Password);
@@ -70,11 +71,14 @@ public class AuthService
             return (false, string.Join(", ", result.Errors.Select(e => e.Description)), null);
         }
 
-        var token = GenerateJwtToken(user, business.Name);
+        var token = GenerateJwtToken(user, business.Name, out DateTime expiresAt);
+        var refreshToken = await GenerateRefreshTokenAsync(user, ipAddress);
 
         var response = new AuthResponseDto
         {
             Token = token,
+            RefreshToken = refreshToken.Token,
+            ExpiresAt = expiresAt,
             UserId = user.Id,
             Email = user.Email!,
             FirstName = user.FirstName,
@@ -87,7 +91,7 @@ public class AuthService
         return (true, null, response);
     }
 
-    public async Task<(bool Success, string? Error, AuthResponseDto? Response)> LoginAsync(LoginDto loginDto)
+    public async Task<(bool Success, string? Error, AuthResponseDto? Response)> LoginAsync(LoginDto loginDto, string ipAddress = "")
     {
         var user = await _userManager.FindByEmailAsync(loginDto.Email);
         if (user == null || !user.IsActive)
@@ -111,11 +115,14 @@ public class AuthService
             return (false, "Business not found", null);
         }
 
-        var token = GenerateJwtToken(user, business.Name);
+        var token = GenerateJwtToken(user, business.Name, out DateTime expiresAt);
+        var refreshToken = await GenerateRefreshTokenAsync(user, ipAddress);
 
         var response = new AuthResponseDto
         {
             Token = token,
+            RefreshToken = refreshToken.Token,
+            ExpiresAt = expiresAt,
             UserId = user.Id,
             Email = user.Email!,
             FirstName = user.FirstName,
@@ -128,7 +135,7 @@ public class AuthService
         return (true, null, response);
     }
 
-    private string GenerateJwtToken(ApplicationUser user, string businessName)
+    private string GenerateJwtToken(ApplicationUser user, string businessName, out DateTime expiresAt)
     {
         var claims = new[]
         {
@@ -147,14 +154,65 @@ public class AuthService
 
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
+        // Access token expires in 15 minutes for better security with refresh tokens
+        expiresAt = DateTime.UtcNow.AddMinutes(15);
+
         var token = new JwtSecurityToken(
             issuer: _configuration["Jwt:Issuer"],
             audience: _configuration["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddDays(7),
+            expires: expiresAt,
             signingCredentials: creds);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    private async Task<RefreshToken> GenerateRefreshTokenAsync(ApplicationUser user, string ipAddress)
+    {
+        // Remove old refresh tokens for this user (keep last 5)
+        await RemoveOldRefreshTokensAsync(user.Id);
+
+        var refreshToken = new RefreshToken
+        {
+            Token = GenerateSecureToken(),
+            UserId = user.Id,
+            ExpiresAt = DateTime.UtcNow.AddDays(7), // Refresh token expires in 7 days
+            CreatedAt = DateTime.UtcNow,
+            CreatedByIp = ipAddress
+        };
+
+        _context.RefreshTokens.Add(refreshToken);
+        await _context.SaveChangesAsync();
+
+        return refreshToken;
+    }
+
+    private async Task RemoveOldRefreshTokensAsync(string userId)
+    {
+        var oldTokens = await _context.RefreshTokens
+            .Where(t => t.UserId == userId && (t.IsRevoked || t.IsExpired))
+            .ToListAsync();
+
+        // Also limit active tokens to 5 per user
+        var activeTokens = await _context.RefreshTokens
+            .Where(t => t.UserId == userId && t.IsActive)
+            .OrderByDescending(t => t.CreatedAt)
+            .Skip(5)
+            .ToListAsync();
+
+        _context.RefreshTokens.RemoveRange(oldTokens);
+        _context.RefreshTokens.RemoveRange(activeTokens);
+        await _context.SaveChangesAsync();
+    }
+
+    private string GenerateSecureToken()
+    {
+        var randomBytes = new byte[64];
+        using (var rng = RandomNumberGenerator.Create())
+        {
+            rng.GetBytes(randomBytes);
+        }
+        return Convert.ToBase64String(randomBytes);
     }
 
     // Profile Management
@@ -322,5 +380,69 @@ public class AuthService
             rng.GetBytes(randomBytes);
         }
         return Convert.ToBase64String(randomBytes);
+    }
+
+    // Token Refresh Management
+    public async Task<(bool Success, string? Error, RefreshTokenResponse? Response)> RefreshTokenAsync(string refreshToken, string ipAddress)
+    {
+        var user = await _context.Users
+            .Include(u => u.Business)
+            .FirstOrDefaultAsync(u => u.RefreshTokens.Any(t => t.Token == refreshToken));
+
+        if (user == null)
+        {
+            return (false, "Invalid refresh token", null);
+        }
+
+        var storedRefreshToken = await _context.RefreshTokens
+            .FirstOrDefaultAsync(t => t.Token == refreshToken && t.UserId == user.Id);
+
+        if (storedRefreshToken == null || !storedRefreshToken.IsActive)
+        {
+            return (false, "Invalid or expired refresh token", null);
+        }
+
+        // Generate new tokens
+        var newJwtToken = GenerateJwtToken(user, user.Business.Name, out DateTime expiresAt);
+        var newRefreshToken = await GenerateRefreshTokenAsync(user, ipAddress);
+
+        // Revoke old refresh token and mark it as replaced
+        storedRefreshToken.RevokedAt = DateTime.UtcNow;
+        storedRefreshToken.RevokedByIp = ipAddress;
+        storedRefreshToken.ReplacedByToken = newRefreshToken.Token;
+
+        // Update last activity
+        user.LastLoginAt = DateTime.UtcNow;
+        await _userManager.UpdateAsync(user);
+
+        await _context.SaveChangesAsync();
+
+        var response = new RefreshTokenResponse
+        {
+            Token = newJwtToken,
+            RefreshToken = newRefreshToken.Token,
+            ExpiresAt = expiresAt
+        };
+
+        return (true, null, response);
+    }
+
+    public async Task<(bool Success, string? Error)> RevokeTokenAsync(string refreshToken, string ipAddress)
+    {
+        var storedRefreshToken = await _context.RefreshTokens
+            .FirstOrDefaultAsync(t => t.Token == refreshToken);
+
+        if (storedRefreshToken == null || !storedRefreshToken.IsActive)
+        {
+            return (false, "Invalid or already revoked token");
+        }
+
+        // Revoke token
+        storedRefreshToken.RevokedAt = DateTime.UtcNow;
+        storedRefreshToken.RevokedByIp = ipAddress;
+
+        await _context.SaveChangesAsync();
+
+        return (true, null);
     }
 }

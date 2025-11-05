@@ -16,4 +16,5 @@ public class ApplicationUser : IdentityUser
     // Navigation properties
     public Business Business { get; set; } = null!;
     public ICollection<StockMovement> StockMovements { get; set; } = new List<StockMovement>();
+    public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 }

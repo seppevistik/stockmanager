@@ -22,6 +22,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Receipt> Receipts { get; set; }
     public DbSet<ReceiptLine> ReceiptLines { get; set; }
     public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -296,6 +297,26 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(e => e.Token);
             entity.HasIndex(e => new { e.UserId, e.IsUsed });
             entity.HasIndex(e => e.ExpiresAt);
+        });
+
+        // RefreshToken configuration
+        builder.Entity<RefreshToken>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Token).IsRequired().HasMaxLength(256);
+            entity.Property(e => e.CreatedByIp).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.RevokedByIp).HasMaxLength(50);
+            entity.Property(e => e.ReplacedByToken).HasMaxLength(256);
+
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.Token).IsUnique();
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.ExpiresAt);
+            entity.HasIndex(e => new { e.UserId, e.ExpiresAt });
         });
     }
 

@@ -23,7 +23,8 @@ public class AuthController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var result = await _authService.RegisterAsync(registerDto);
+        var ipAddress = GetIpAddress();
+        var result = await _authService.RegisterAsync(registerDto, ipAddress);
 
         if (!result.Success)
             return BadRequest(new { message = result.Error });
@@ -37,7 +38,8 @@ public class AuthController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var result = await _authService.LoginAsync(loginDto);
+        var ipAddress = GetIpAddress();
+        var result = await _authService.LoginAsync(loginDto, ipAddress);
 
         if (!result.Success)
             return Unauthorized(new { message = result.Error });
@@ -125,5 +127,48 @@ public class AuthController : ControllerBase
             return BadRequest(new { message = result.Error });
 
         return Ok(new { message = "Password has been reset successfully" });
+    }
+
+    [HttpPost("refresh-token")]
+    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest refreshTokenDto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var ipAddress = GetIpAddress();
+        var result = await _authService.RefreshTokenAsync(refreshTokenDto.RefreshToken, ipAddress);
+
+        if (!result.Success)
+            return Unauthorized(new { message = result.Error });
+
+        return Ok(result.Response);
+    }
+
+    [HttpPost("revoke-token")]
+    [Authorize]
+    public async Task<IActionResult> RevokeToken([FromBody] RevokeTokenRequest revokeTokenDto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var ipAddress = GetIpAddress();
+        var result = await _authService.RevokeTokenAsync(revokeTokenDto.RefreshToken, ipAddress);
+
+        if (!result.Success)
+            return BadRequest(new { message = result.Error });
+
+        return Ok(new { message = "Token revoked successfully" });
+    }
+
+    private string GetIpAddress()
+    {
+        // Try to get IP from X-Forwarded-For header (for proxies/load balancers)
+        if (Request.Headers.ContainsKey("X-Forwarded-For"))
+        {
+            return Request.Headers["X-Forwarded-For"].ToString().Split(',')[0].Trim();
+        }
+
+        // Fallback to RemoteIpAddress
+        return HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
     }
 }
