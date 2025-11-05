@@ -105,6 +105,23 @@ form {
   }
 }
 
+.forgot-password-link {
+  text-align: center;
+  margin-top: 12px;
+  font-size: 14px;
+
+  a {
+    color: #006c50;
+    text-decoration: none;
+    font-weight: 500;
+
+    &:hover {
+      color: #00513c;
+      text-decoration: underline;
+    }
+  }
+}
+
 ::ng-deep mat-spinner {
   display: inline-block;
   margin: 0 auto;

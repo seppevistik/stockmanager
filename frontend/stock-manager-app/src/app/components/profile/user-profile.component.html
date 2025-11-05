@@ -1,0 +1,98 @@
+<div class="profile-container">
+  <div class="header">
+    <h1>My Profile</h1>
+  </div>
+
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner></mat-spinner>
+  </div>
+
+  <div *ngIf="!loading && profile">
+    <!-- Profile Information Card -->
+    <mat-card class="profile-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>account_circle</mat-icon>
+          Profile Information
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="profileForm">
+          <div class="info-grid">
+            <mat-form-field class="full-width">
+              <mat-label>First Name</mat-label>
+              <input matInput formControlName="firstName" placeholder="First Name">
+              <mat-error *ngIf="profileForm.get('firstName')?.hasError('required')">
+                First name is required
+              </mat-error>
+              <mat-error *ngIf="profileForm.get('firstName')?.hasError('minlength')">
+                First name must be at least 2 characters
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field class="full-width">
+              <mat-label>Last Name</mat-label>
+              <input matInput formControlName="lastName" placeholder="Last Name">
+              <mat-error *ngIf="profileForm.get('lastName')?.hasError('required')">
+                Last name is required
+              </mat-error>
+              <mat-error *ngIf="profileForm.get('lastName')?.hasError('minlength')">
+                Last name must be at least 2 characters
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field class="full-width">
+              <mat-label>Email</mat-label>
+              <input matInput [value]="profile.email" readonly>
+            </mat-form-field>
+
+            <div class="info-item">
+              <label>Role</label>
+              <mat-chip>{{ getRoleDisplayName(profile.role) }}</mat-chip>
+            </div>
+
+            <div class="info-item">
+              <label>Account Status</label>
+              <mat-chip [color]="getStatusColor(profile.isActive)">
+                {{ profile.isActive ? 'Active' : 'Inactive' }}
+              </mat-chip>
+            </div>
+
+            <mat-form-field class="full-width">
+              <mat-label>Member Since</mat-label>
+              <input matInput [value]="profile.createdAt | date: 'mediumDate'" readonly>
+            </mat-form-field>
+
+            <mat-form-field class="full-width" *ngIf="profile.lastLoginAt">
+              <mat-label>Last Login</mat-label>
+              <input matInput [value]="profile.lastLoginAt | date: 'medium'" readonly>
+            </mat-form-field>
+          </div>
+        </form>
+      </mat-card-content>
+      <mat-divider></mat-divider>
+      <mat-card-actions>
+        <div class="actions-container">
+          <div class="profile-actions">
+            <button mat-raised-button color="primary" *ngIf="!editMode" (click)="enableEdit()">
+              <mat-icon>edit</mat-icon> Edit Profile
+            </button>
+            <button mat-raised-button color="primary" *ngIf="editMode" (click)="saveProfile()" [disabled]="profileForm.invalid || saving">
+              <mat-icon>save</mat-icon> Save Changes
+            </button>
+            <button mat-button *ngIf="editMode" (click)="cancelEdit()" [disabled]="saving">
+              Cancel
+            </button>
+          </div>
+          <button mat-raised-button color="accent" (click)="openChangePasswordDialog()">
+            <mat-icon>lock</mat-icon> Change Password
+          </button>
+        </div>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <div *ngIf="!loading && !profile" class="error-container">
+    <p>Unable to load profile</p>
+  </div>
+</div>

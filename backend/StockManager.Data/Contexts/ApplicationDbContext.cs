@@ -21,6 +21,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<PurchaseOrderLine> PurchaseOrderLines { get; set; }
     public DbSet<Receipt> Receipts { get; set; }
     public DbSet<ReceiptLine> ReceiptLines { get; set; }
+    public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -279,6 +280,22 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(e => e.ReceiptId);
             entity.HasIndex(e => e.PurchaseOrderLineId);
             entity.HasIndex(e => e.ProductId);
+        });
+
+        // PasswordResetToken configuration
+        builder.Entity<PasswordResetToken>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Token).IsRequired().HasMaxLength(500);
+
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.Token);
+            entity.HasIndex(e => new { e.UserId, e.IsUsed });
+            entity.HasIndex(e => e.ExpiresAt);
         });
     }
 

@@ -12,6 +12,14 @@ export const routes: Routes = [
     loadComponent: () => import('./components/auth/register/register.component').then(m => m.RegisterComponent)
   },
   {
+    path: 'forgot-password',
+    loadComponent: () => import('./components/auth/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent)
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () => import('./components/auth/reset-password/reset-password.component').then(m => m.ResetPasswordComponent)
+  },
+  {
     path: '',
     canActivate: [authGuard],
     loadComponent: () => import('./components/layout/main-layout/main-layout.component').then(m => m.MainLayoutComponent),
@@ -87,6 +95,10 @@ export const routes: Routes = [
       {
         path: 'receipts/:id',
         loadComponent: () => import('./components/receipts/receipt-detail/receipt-detail.component').then(m => m.ReceiptDetailComponent)
+      },
+      {
+        path: 'profile',
+        loadComponent: () => import('./components/profile/user-profile.component').then(m => m.UserProfileComponent)
       },
       {
         path: '',

@@ -2,7 +2,18 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
-import { LoginRequest, RegisterRequest, AuthResponse, User, UserRole } from '../models/user.model';
+import {
+  LoginRequest,
+  RegisterRequest,
+  AuthResponse,
+  User,
+  UserRole,
+  UserProfile,
+  UpdateUserProfileRequest,
+  ChangePasswordRequest,
+  ForgotPasswordRequest,
+  ResetPasswordRequest
+} from '../models/user.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -57,6 +68,26 @@ export class AuthService {
   hasRole(roles: UserRole[]): boolean {
     const user = this.getCurrentUser();
     return !!user && roles.includes(user.role);
+  }
+
+  getUserProfile(): Observable<UserProfile> {
+    return this.http.get<UserProfile>(`${this.API_URL}/auth/me`);
+  }
+
+  updateUserProfile(data: UpdateUserProfileRequest): Observable<any> {
+    return this.http.put(`${this.API_URL}/auth/me`, data);
+  }
+
+  changePassword(data: ChangePasswordRequest): Observable<any> {
+    return this.http.post(`${this.API_URL}/auth/change-password`, data);
+  }
+
+  forgotPassword(data: ForgotPasswordRequest): Observable<any> {
+    return this.http.post(`${this.API_URL}/auth/forgot-password`, data);
+  }
+
+  resetPassword(data: ResetPasswordRequest): Observable<any> {
+    return this.http.post(`${this.API_URL}/auth/reset-password`, data);
   }
 
   private handleAuthResponse(response: AuthResponse): void {
