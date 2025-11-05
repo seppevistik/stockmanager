@@ -72,9 +72,21 @@ export const routes: Routes = [
         data: { roles: [UserRole.Admin, UserRole.Manager] }
       },
       {
+        path: 'purchase-orders/:id',
+        loadComponent: () => import('./components/purchase-orders/purchase-order-detail/purchase-order-detail.component').then(m => m.PurchaseOrderDetailComponent)
+      },
+      {
+        path: 'receipts',
+        loadComponent: () => import('./components/receipts/receipts-list/receipts-list.component').then(m => m.ReceiptsListComponent)
+      },
+      {
         path: 'receipts/new',
         loadComponent: () => import('./components/receipts/receipt-form/receipt-form.component').then(m => m.ReceiptFormComponent),
         data: { roles: [UserRole.Admin, UserRole.Manager, UserRole.Staff] }
+      },
+      {
+        path: 'receipts/:id',
+        loadComponent: () => import('./components/receipts/receipt-detail/receipt-detail.component').then(m => m.ReceiptDetailComponent)
       },
       {
         path: '',

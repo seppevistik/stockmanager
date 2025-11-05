@@ -18,7 +18,7 @@ public class PurchaseOrder
     public decimal TotalAmount { get; set; }
     public string? Notes { get; set; }
     public string? SupplierReference { get; set; }
-    public int CreatedBy { get; set; }
+    public string CreatedBy { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public DateTime? SubmittedAt { get; set; }

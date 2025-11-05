@@ -11,6 +11,42 @@ namespace StockManager.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // Create Companies table
+            migrationBuilder.CreateTable(
+                name: "Companies",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    ContactPerson = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    Email = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    Phone = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    Address = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    City = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    Country = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    PostalCode = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    Website = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    TaxNumber = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    IsSupplier = table.Column<bool>(type: "bit", nullable: false),
+                    IsCustomer = table.Column<bool>(type: "bit", nullable: false),
+                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    BusinessId = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Companies", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Companies_Businesses_BusinessId",
+                        column: x => x.BusinessId,
+                        principalTable: "Businesses",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             // Create PurchaseOrders table
             migrationBuilder.CreateTable(
                 name: "PurchaseOrders",
@@ -31,7 +67,7 @@ namespace StockManager.Data.Migrations
                     TotalAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     SupplierReference = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    CreatedBy = table.Column<int>(type: "int", nullable: false),
+                    CreatedBy = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     SubmittedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -111,13 +147,13 @@ namespace StockManager.Data.Migrations
                     PurchaseOrderId = table.Column<int>(type: "int", nullable: false),
                     ReceiptNumber = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     ReceiptDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ReceivedBy = table.Column<int>(type: "int", nullable: false),
+                    ReceivedBy = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     SupplierDeliveryNote = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     HasVariances = table.Column<bool>(type: "bit", nullable: false),
                     VarianceNotes = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ValidatedBy = table.Column<int>(type: "int", nullable: true),
+                    ValidatedBy = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     ValidatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CompletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -197,6 +233,17 @@ namespace StockManager.Data.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            // Create indexes for Companies
+            migrationBuilder.CreateIndex(
+                name: "IX_Companies_BusinessId",
+                table: "Companies",
+                column: "BusinessId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Companies_Name",
+                table: "Companies",
+                column: "Name");
 
             // Create indexes for PurchaseOrders
             migrationBuilder.CreateIndex(
@@ -298,6 +345,7 @@ namespace StockManager.Data.Migrations
             migrationBuilder.DropTable(name: "Receipts");
             migrationBuilder.DropTable(name: "PurchaseOrderLines");
             migrationBuilder.DropTable(name: "PurchaseOrders");
+            migrationBuilder.DropTable(name: "Companies");
         }
     }
 }

@@ -9,13 +9,13 @@ public class Receipt
     public int PurchaseOrderId { get; set; }
     public string ReceiptNumber { get; set; } = string.Empty;
     public DateTime ReceiptDate { get; set; }
-    public int ReceivedBy { get; set; }
+    public string ReceivedBy { get; set; } = string.Empty;
     public ReceiptStatus Status { get; set; }
     public string? SupplierDeliveryNote { get; set; }
     public string? Notes { get; set; }
     public bool HasVariances { get; set; }
     public string? VarianceNotes { get; set; }
-    public int? ValidatedBy { get; set; }
+    public string? ValidatedBy { get; set; }
     public DateTime? ValidatedAt { get; set; }
     public DateTime? CompletedAt { get; set; }
     public DateTime CreatedAt { get; set; }

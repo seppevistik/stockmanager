@@ -185,14 +185,73 @@ public class ReceiptService
         // Update lines if provided
         if (updateDto.Lines != null && updateDto.Lines.Any())
         {
-            // Remove existing lines
-            foreach (var line in receipt.Lines.ToList())
+            // Get purchase order details for line validation
+            var purchaseOrder = await _unitOfWork.PurchaseOrders.GetByIdWithDetailsAsync(receipt.PurchaseOrderId, businessId);
+            if (purchaseOrder == null)
             {
-                await _unitOfWork.Receipts.DeleteAsync(receipt); // This will cascade delete lines
+                return (false, "Purchase order not found");
             }
 
-            // Add new lines (simplified - in real implementation, you'd handle this more carefully)
-            // For now, assume user will recreate receipt if major changes needed
+            // Clear existing lines
+            receipt.Lines.Clear();
+
+            // Add updated lines
+            bool hasVariances = false;
+            foreach (var lineDto in updateDto.Lines)
+            {
+                var poLine = purchaseOrder.Lines.FirstOrDefault(l => l.Id == lineDto.PurchaseOrderLineId);
+                if (poLine == null)
+                {
+                    return (false, $"Purchase order line {lineDto.PurchaseOrderLineId} not found");
+                }
+
+                if (lineDto.QuantityReceived < 0)
+                {
+                    return (false, "Received quantity cannot be negative");
+                }
+
+                // Calculate variances
+                var quantityVariance = lineDto.QuantityReceived - poLine.QuantityOutstanding;
+                var priceReceived = lineDto.UnitPriceReceived ?? poLine.UnitPrice;
+                var priceVariance = priceReceived - poLine.UnitPrice;
+
+                // Check if variance exceeds tolerance
+                var variancePercentage = poLine.QuantityOrdered > 0
+                    ? Math.Abs(quantityVariance / poLine.QuantityOrdered * 100)
+                    : 0;
+
+                if (variancePercentage > VarianceTolerancePercentage ||
+                    lineDto.Condition != ItemCondition.Good ||
+                    Math.Abs(priceVariance) > 0.01m)
+                {
+                    hasVariances = true;
+                }
+
+                var line = new ReceiptLine
+                {
+                    ReceiptId = receipt.Id,
+                    PurchaseOrderLineId = lineDto.PurchaseOrderLineId,
+                    ProductId = poLine.ProductId,
+                    QuantityOrdered = poLine.QuantityOrdered,
+                    QuantityReceived = lineDto.QuantityReceived,
+                    QuantityVariance = quantityVariance,
+                    UnitPriceOrdered = poLine.UnitPrice,
+                    UnitPriceReceived = lineDto.UnitPriceReceived,
+                    PriceVariance = priceVariance,
+                    Condition = lineDto.Condition,
+                    DamageNotes = lineDto.DamageNotes,
+                    Location = lineDto.Location,
+                    BatchNumber = lineDto.BatchNumber,
+                    ExpiryDate = lineDto.ExpiryDate,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                receipt.Lines.Add(line);
+            }
+
+            // Update variance status
+            receipt.HasVariances = hasVariances;
+            receipt.Status = hasVariances ? ReceiptStatus.PendingValidation : ReceiptStatus.Validated;
         }
 
         await _unitOfWork.Receipts.UpdateAsync(receipt);

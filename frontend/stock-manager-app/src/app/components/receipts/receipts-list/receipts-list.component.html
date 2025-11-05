@@ -1,0 +1,131 @@
+<div class="receipts-list-container">
+  <div class="header">
+    <h1>Receipts</h1>
+    <button mat-raised-button color="primary" (click)="createReceipt()">
+      <mat-icon>add</mat-icon>
+      Create Receipt
+    </button>
+  </div>
+
+  <!-- Alert for pending validation -->
+  <div class="alert-banner" *ngIf="getPendingValidationCount() > 0">
+    <mat-icon>warning</mat-icon>
+    <span>{{ getPendingValidationCount() }} receipt(s) pending validation</span>
+    <button mat-button (click)="showPendingValidationOnly()">View</button>
+  </div>
+
+  <mat-card>
+    <mat-card-content>
+      <!-- Filters -->
+      <div class="filters">
+        <mat-form-field class="filter-field">
+          <mat-label>Status</mat-label>
+          <mat-select [(ngModel)]="statusFilter" (selectionChange)="onStatusFilterChange()">
+            <mat-option *ngFor="let status of statuses" [value]="status.value">
+              {{ status.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field class="filter-field search-field">
+          <mat-label>Search</mat-label>
+          <input matInput [(ngModel)]="searchTerm" (keyup)="onSearch()"
+                 placeholder="Receipt number, PO number, company...">
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="loading" class="loading-container">
+        <mat-spinner></mat-spinner>
+      </div>
+
+      <!-- Error State -->
+      <div *ngIf="!loading && errorMessage" class="error-container">
+        <p>{{ errorMessage }}</p>
+        <button mat-raised-button color="primary" (click)="loadReceipts()">Retry</button>
+      </div>
+
+      <!-- Receipts Table -->
+      <div *ngIf="!loading && !errorMessage" class="table-container">
+        <table mat-table [dataSource]="filteredReceipts" class="full-width">
+          <!-- Receipt Number Column -->
+          <ng-container matColumnDef="receiptNumber">
+            <th mat-header-cell *matHeaderCellDef>Receipt #</th>
+            <td mat-cell *matCellDef="let receipt">
+              <a class="link" (click)="viewReceipt(receipt)">{{ receipt.receiptNumber }}</a>
+            </td>
+          </ng-container>
+
+          <!-- Purchase Order Number Column -->
+          <ng-container matColumnDef="purchaseOrderNumber">
+            <th mat-header-cell *matHeaderCellDef>Purchase Order</th>
+            <td mat-cell *matCellDef="let receipt">
+              <a class="link" (click)="viewPurchaseOrder(receipt)">{{ receipt.purchaseOrderNumber }}</a>
+            </td>
+          </ng-container>
+
+          <!-- Company Name Column -->
+          <ng-container matColumnDef="companyName">
+            <th mat-header-cell *matHeaderCellDef>Supplier</th>
+            <td mat-cell *matCellDef="let receipt">{{ receipt.companyName }}</td>
+          </ng-container>
+
+          <!-- Receipt Date Column -->
+          <ng-container matColumnDef="receiptDate">
+            <th mat-header-cell *matHeaderCellDef>Date</th>
+            <td mat-cell *matCellDef="let receipt">{{ receipt.receiptDate | date: 'mediumDate' }}</td>
+          </ng-container>
+
+          <!-- Received By Column -->
+          <ng-container matColumnDef="receivedByName">
+            <th mat-header-cell *matHeaderCellDef>Received By</th>
+            <td mat-cell *matCellDef="let receipt">{{ receipt.receivedByName }}</td>
+          </ng-container>
+
+          <!-- Status Column -->
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let receipt">
+              <mat-chip [color]="getStatusColor(receipt.status)" class="status-chip">
+                {{ receipt.status }}
+              </mat-chip>
+            </td>
+          </ng-container>
+
+          <!-- Has Variances Column -->
+          <ng-container matColumnDef="hasVariances">
+            <th mat-header-cell *matHeaderCellDef>Variances</th>
+            <td mat-cell *matCellDef="let receipt">
+              <mat-icon *ngIf="receipt.hasVariances" color="warn" matTooltip="Has variances">warning</mat-icon>
+              <mat-icon *ngIf="!receipt.hasVariances" color="primary" matTooltip="No variances">check_circle</mat-icon>
+            </td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let receipt">
+              <button mat-icon-button (click)="viewReceipt(receipt)" matTooltip="View Details">
+                <mat-icon>visibility</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" *ngIf="canDelete(receipt)" (click)="deleteReceipt(receipt)" matTooltip="Delete">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="table-row"></tr>
+        </table>
+
+        <!-- Empty State -->
+        <div *ngIf="filteredReceipts.length === 0" class="empty-state">
+          <mat-icon>receipt_long</mat-icon>
+          <p>No receipts found</p>
+          <p class="hint">{{ searchTerm || statusFilter !== 'All' ? 'Try adjusting your filters' : 'Create your first receipt to get started' }}</p>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
