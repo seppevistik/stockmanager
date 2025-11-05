@@ -1,0 +1,146 @@
+<div class="form-container">
+  <div class="header">
+    <button mat-icon-button routerLink="/users" class="back-button">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1>{{ isEditMode ? 'Edit User' : 'Create New User' }}</h1>
+  </div>
+
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner></mat-spinner>
+  </div>
+
+  <mat-card *ngIf="!loading" class="form-card">
+    <mat-card-content>
+      <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+        <!-- Personal Information Section -->
+        <div class="form-section">
+          <h2>
+            <mat-icon>person</mat-icon>
+            Personal Information
+          </h2>
+
+          <div class="form-row">
+            <mat-form-field class="full-width">
+              <mat-label>Email</mat-label>
+              <input matInput type="email" formControlName="email" placeholder="user@example.com">
+              <mat-icon matPrefix>email</mat-icon>
+              <mat-error>{{ getErrorMessage('email') }}</mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row two-columns">
+            <mat-form-field>
+              <mat-label>First Name</mat-label>
+              <input matInput formControlName="firstName" placeholder="John">
+              <mat-error>{{ getErrorMessage('firstName') }}</mat-error>
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>Last Name</mat-label>
+              <input matInput formControlName="lastName" placeholder="Doe">
+              <mat-error>{{ getErrorMessage('lastName') }}</mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <!-- Role & Permissions Section -->
+        <div class="form-section">
+          <h2>
+            <mat-icon>admin_panel_settings</mat-icon>
+            Role & Permissions
+          </h2>
+
+          <mat-form-field class="full-width">
+            <mat-label>Role</mat-label>
+            <mat-select formControlName="role">
+              <mat-option *ngFor="let role of roles" [value]="role.value">
+                <div class="role-option">
+                  <span class="role-name">{{ role.label }}</span>
+                  <span class="role-description">{{ role.description }}</span>
+                </div>
+              </mat-option>
+            </mat-select>
+            <mat-error>{{ getErrorMessage('role') }}</mat-error>
+          </mat-form-field>
+
+          <div class="role-info">
+            <mat-icon>info</mat-icon>
+            <span>The user role determines what actions they can perform in the system.</span>
+          </div>
+        </div>
+
+        <!-- Security Section (Create Mode Only) -->
+        <div class="form-section" *ngIf="!isEditMode">
+          <h2>
+            <mat-icon>lock</mat-icon>
+            Security
+          </h2>
+
+          <mat-form-field class="full-width">
+            <mat-label>Temporary Password</mat-label>
+            <input matInput type="password" formControlName="temporaryPassword" placeholder="Enter temporary password">
+            <mat-icon matPrefix>vpn_key</mat-icon>
+            <mat-error>{{ getErrorMessage('temporaryPassword') }}</mat-error>
+            <mat-hint>User will be asked to change this password on first login</mat-hint>
+          </mat-form-field>
+
+          <div class="checkbox-field">
+            <mat-checkbox formControlName="sendWelcomeEmail">
+              Send welcome email to user
+            </mat-checkbox>
+            <p class="checkbox-hint">
+              The user will receive an email with their login credentials and instructions.
+            </p>
+          </div>
+        </div>
+
+        <!-- User Status Info (Edit Mode Only) -->
+        <div class="form-section" *ngIf="isEditMode && user">
+          <h2>
+            <mat-icon>info</mat-icon>
+            Account Information
+          </h2>
+
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Status</label>
+              <mat-chip [color]="user.isActive ? 'primary' : 'warn'">
+                {{ user.isActive ? 'Active' : 'Inactive' }}
+              </mat-chip>
+            </div>
+
+            <div class="info-item">
+              <label>Active Sessions</label>
+              <span class="session-count">
+                <mat-icon>devices</mat-icon>
+                {{ user.activeSessionCount }}
+              </span>
+            </div>
+
+            <div class="info-item">
+              <label>Created</label>
+              <span>{{ user.createdAt | date: 'medium' }}</span>
+            </div>
+
+            <div class="info-item">
+              <label>Last Login</label>
+              <span>{{ user.lastLoginAt ? (user.lastLoginAt | date: 'medium') : 'Never' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button mat-button type="button" (click)="cancel()" [disabled]="saving">
+            Cancel
+          </button>
+          <button mat-raised-button color="primary" type="submit" [disabled]="userForm.invalid || saving">
+            <mat-spinner *ngIf="saving" diameter="20" class="inline-spinner"></mat-spinner>
+            <span *ngIf="!saving">{{ isEditMode ? 'Update User' : 'Create User' }}</span>
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

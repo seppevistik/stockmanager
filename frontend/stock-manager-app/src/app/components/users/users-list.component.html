@@ -1,0 +1,206 @@
+<div class="users-container">
+  <div class="header">
+    <h1>User Management</h1>
+    <button mat-raised-button color="primary" (click)="createUser()">
+      <mat-icon>person_add</mat-icon> Add User
+    </button>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="statistics-grid" *ngIf="statistics">
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <div class="stat-icon">
+          <mat-icon>people</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ statistics.Total }}</div>
+          <div class="stat-label">Total Users</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card active">
+      <mat-card-content>
+        <div class="stat-icon">
+          <mat-icon>check_circle</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ statistics.Active }}</div>
+          <div class="stat-label">Active Users</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <div class="stat-icon">
+          <mat-icon>admin_panel_settings</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ statistics.Admins }}</div>
+          <div class="stat-label">Admins</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <div class="stat-icon">
+          <mat-icon>manage_accounts</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ statistics.Managers }}</div>
+          <div class="stat-label">Managers</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Filters -->
+  <mat-card class="filters-card">
+    <mat-card-content>
+      <div class="filters">
+        <mat-form-field class="search-field">
+          <mat-label>Search</mat-label>
+          <input matInput [formControl]="searchControl" placeholder="Search by name or email">
+          <mat-icon matPrefix>search</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Role</mat-label>
+          <mat-select [formControl]="roleFilter">
+            <mat-option [value]="null">All Roles</mat-option>
+            <mat-option *ngFor="let role of roles" [value]="role.value">
+              {{ role.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Status</mat-label>
+          <mat-select [formControl]="statusFilter">
+            <mat-option [value]="null">All Status</mat-option>
+            <mat-option [value]="true">Active</mat-option>
+            <mat-option [value]="false">Inactive</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <button mat-stroked-button (click)="clearFilters()">
+          <mat-icon>clear</mat-icon> Clear Filters
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Users Table -->
+  <mat-card class="table-card">
+    <div *ngIf="loading" class="loading-container">
+      <mat-spinner></mat-spinner>
+    </div>
+
+    <div *ngIf="!loading" class="table-container">
+      <table mat-table [dataSource]="users" class="users-table">
+        <!-- Name Column -->
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Name</th>
+          <td mat-cell *matCellDef="let user">
+            <div class="user-name">
+              <mat-icon class="user-avatar">account_circle</mat-icon>
+              <span>{{ user.firstName }} {{ user.lastName }}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Email Column -->
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef>Email</th>
+          <td mat-cell *matCellDef="let user">{{ user.email }}</td>
+        </ng-container>
+
+        <!-- Role Column -->
+        <ng-container matColumnDef="role">
+          <th mat-header-cell *matHeaderCellDef>Role</th>
+          <td mat-cell *matCellDef="let user">
+            <mat-chip [color]="getRoleColor(user.role)">
+              {{ user.roleName }}
+            </mat-chip>
+          </td>
+        </ng-container>
+
+        <!-- Status Column -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let user">
+            <mat-chip [color]="getStatusColor(user.isActive)">
+              {{ user.isActive ? 'Active' : 'Inactive' }}
+            </mat-chip>
+          </td>
+        </ng-container>
+
+        <!-- Last Login Column -->
+        <ng-container matColumnDef="lastLogin">
+          <th mat-header-cell *matHeaderCellDef>Last Login</th>
+          <td mat-cell *matCellDef="let user">{{ formatLastLogin(user.lastLoginAt) }}</td>
+        </ng-container>
+
+        <!-- Sessions Column -->
+        <ng-container matColumnDef="sessions">
+          <th mat-header-cell *matHeaderCellDef>Sessions</th>
+          <td mat-cell *matCellDef="let user">
+            <span class="session-count" [class.has-sessions]="user.activeSessionCount > 0">
+              <mat-icon>devices</mat-icon>
+              {{ user.activeSessionCount }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Actions Column -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let user">
+            <button mat-icon-button [matMenuTriggerFor]="menu">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #menu="matMenu">
+              <button mat-menu-item (click)="editUser(user)">
+                <mat-icon>edit</mat-icon>
+                <span>Edit</span>
+              </button>
+              <button mat-menu-item (click)="toggleUserStatus(user)">
+                <mat-icon>{{ user.isActive ? 'block' : 'check_circle' }}</mat-icon>
+                <span>{{ user.isActive ? 'Deactivate' : 'Activate' }}</span>
+              </button>
+              <button mat-menu-item (click)="revokeUserSessions(user)" [disabled]="user.activeSessionCount === 0">
+                <mat-icon>logout</mat-icon>
+                <span>Revoke Sessions ({{ user.activeSessionCount }})</span>
+              </button>
+            </mat-menu>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+        <!-- No data row -->
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell no-data" [attr.colspan]="displayedColumns.length">
+            <div class="no-data-container">
+              <mat-icon>people_outline</mat-icon>
+              <p>No users found</p>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <mat-paginator
+      [length]="totalCount"
+      [pageSize]="pageSize"
+      [pageIndex]="pageIndex"
+      [pageSizeOptions]="[5, 10, 20, 50]"
+      (page)="onPageChange($event)"
+      showFirstLastButtons>
+    </mat-paginator>
+  </mat-card>
+</div>

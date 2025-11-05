@@ -101,6 +101,21 @@ export const routes: Routes = [
         loadComponent: () => import('./components/profile/user-profile.component').then(m => m.UserProfileComponent)
       },
       {
+        path: 'users',
+        loadComponent: () => import('./components/users/users-list.component').then(m => m.UsersListComponent),
+        data: { roles: [UserRole.Admin] }
+      },
+      {
+        path: 'users/new',
+        loadComponent: () => import('./components/users/user-form.component').then(m => m.UserFormComponent),
+        data: { roles: [UserRole.Admin] }
+      },
+      {
+        path: 'users/edit/:id',
+        loadComponent: () => import('./components/users/user-form.component').then(m => m.UserFormComponent),
+        data: { roles: [UserRole.Admin] }
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full'
