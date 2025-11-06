@@ -11,6 +11,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatChipsModule } from '@angular/material/chips';
 import { UserManagementService } from '../../services/user-management.service';
 import { CreateUserRequest, UpdateUserRequest, UserDto } from '../../models/user-management.model';
 
@@ -29,7 +30,8 @@ import { CreateUserRequest, UpdateUserRequest, UserDto } from '../../models/user
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatChipsModule
   ],
   templateUrl: './user-form.component.html',
   styleUrl: './user-form.component.scss'

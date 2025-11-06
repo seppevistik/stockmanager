@@ -53,7 +53,7 @@
 
             <div class="info-item">
               <label>Account Status</label>
-              <mat-chip [color]="getStatusColor(profile.isActive)">
+              <mat-chip [class]="'status-' + getStatusColor(profile.isActive)">
                 {{ profile.isActive ? 'Active' : 'Inactive' }}
               </mat-chip>
             </div>

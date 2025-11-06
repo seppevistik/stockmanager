@@ -105,7 +105,7 @@
           <div class="info-grid">
             <div class="info-item">
               <label>Status</label>
-              <mat-chip [color]="user.isActive ? 'primary' : 'warn'">
+              <mat-chip [class]="user.isActive ? 'status-primary' : 'status-warn'">
                 {{ user.isActive ? 'Active' : 'Inactive' }}
               </mat-chip>
             </div>

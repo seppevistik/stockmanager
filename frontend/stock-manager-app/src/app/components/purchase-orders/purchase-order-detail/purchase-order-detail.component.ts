@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -8,7 +8,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -314,10 +314,10 @@ export class ConfirmDeliveryDialog {
 
   constructor(
     private fb: FormBuilder,
-    public dialogRef: MatDialog,
-    public dialog: any
+    public dialogRef: MatDialogRef<ConfirmDeliveryDialog>,
+    @Inject(MAT_DIALOG_DATA) public data: any
   ) {
-    const expectedDate = (dialog as any).data?.expectedDate;
+    const expectedDate = data?.expectedDate;
     this.form = this.fb.group({
       confirmedDeliveryDate: [expectedDate || new Date(), Validators.required]
     });
@@ -325,7 +325,7 @@ export class ConfirmDeliveryDialog {
 
   onConfirm(): void {
     if (this.form.valid) {
-      (this.dialog as any).close(this.form.value);
+      this.dialogRef.close(this.form.value);
     }
   }
 }
@@ -368,7 +368,7 @@ export class CancelPurchaseOrderDialog {
 
   constructor(
     private fb: FormBuilder,
-    public dialog: any
+    public dialogRef: MatDialogRef<CancelPurchaseOrderDialog>
   ) {
     this.form = this.fb.group({
       reason: ['', Validators.required]
@@ -377,7 +377,7 @@ export class CancelPurchaseOrderDialog {
 
   onCancel(): void {
     if (this.form.valid) {
-      (this.dialog as any).close(this.form.value);
+      this.dialogRef.close(this.form.value);
     }
   }
 }

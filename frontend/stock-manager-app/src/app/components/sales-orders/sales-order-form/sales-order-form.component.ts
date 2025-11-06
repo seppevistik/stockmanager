@@ -194,7 +194,7 @@ export class SalesOrderFormComponent implements OnInit {
     const line = this.lines.at(index);
     line.patchValue({
       productId: product.id,
-      unitPrice: product.currentPrice || 0
+      unitPrice: product.costPerUnit || 0
     });
   }
 
@@ -207,7 +207,7 @@ export class SalesOrderFormComponent implements OnInit {
   loadCustomers(): void {
     this.companyService.getAll().subscribe({
       next: (companies) => {
-        this.customers = companies.filter(c => c.type === 'Customer');
+        this.customers = companies.filter(c => c.isCustomer);
       },
       error: (error) => {
         console.error('Error loading customers:', error);
@@ -289,7 +289,7 @@ export class SalesOrderFormComponent implements OnInit {
         shipToName: customer.name,
         shipToAddress: customer.address || '',
         shipToCity: customer.city || '',
-        shipToState: customer.state || '',
+        shipToState: '',
         shipToPostalCode: customer.postalCode || '',
         shipToCountry: customer.country || 'USA',
         shipToPhone: customer.phone || ''

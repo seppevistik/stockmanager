@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -8,7 +8,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
@@ -285,9 +285,10 @@ export class ApproveReceiptDialog {
 
   constructor(
     private fb: FormBuilder,
-    public dialog: any
+    public dialogRef: MatDialogRef<ApproveReceiptDialog>,
+    @Inject(MAT_DIALOG_DATA) public data: any
   ) {
-    this.hasVariances = (dialog as any).data?.hasVariances || false;
+    this.hasVariances = data?.hasVariances || false;
 
     this.form = this.fb.group({
       varianceNotes: [
@@ -299,7 +300,7 @@ export class ApproveReceiptDialog {
 
   onApprove(): void {
     if (this.form.valid) {
-      (this.dialog as any).close(this.form.value);
+      this.dialogRef.close(this.form.value);
     }
   }
 }
@@ -343,7 +344,7 @@ export class RejectReceiptDialog {
 
   constructor(
     private fb: FormBuilder,
-    public dialog: any
+    public dialogRef: MatDialogRef<RejectReceiptDialog>
   ) {
     this.form = this.fb.group({
       reason: ['', Validators.required]
@@ -352,7 +353,7 @@ export class RejectReceiptDialog {
 
   onReject(): void {
     if (this.form.valid) {
-      (this.dialog as any).close(this.form.value);
+      this.dialogRef.close(this.form.value);
     }
   }
 }

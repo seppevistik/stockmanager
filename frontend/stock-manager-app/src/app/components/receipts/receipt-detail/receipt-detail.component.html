@@ -16,7 +16,7 @@
       <mat-card-header>
         <mat-card-title>
           {{ receipt.receiptNumber }}
-          <mat-chip [color]="getStatusColor(receipt.status)">
+          <mat-chip>
             {{ receipt.status }}
           </mat-chip>
           <mat-chip *ngIf="receipt.hasVariances" color="warn">
