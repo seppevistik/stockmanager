@@ -326,15 +326,17 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.OrderNumber).IsRequired().HasMaxLength(50);
-            entity.Property(e => e.ShipToName).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.ShipToName).IsRequired().HasMaxLength(200);
             entity.Property(e => e.ShipToAddress).IsRequired().HasMaxLength(500);
             entity.Property(e => e.ShipToCity).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.ShipToState).IsRequired().HasMaxLength(100);
             entity.Property(e => e.ShipToPostalCode).IsRequired().HasMaxLength(20);
             entity.Property(e => e.ShipToCountry).IsRequired().HasMaxLength(100);
-            entity.Property(e => e.ShipToPhone).HasMaxLength(50);
+            entity.Property(e => e.ShipToPhone).HasMaxLength(20);
 
             entity.Property(e => e.SubTotal).HasPrecision(18, 2);
             entity.Property(e => e.TaxAmount).HasPrecision(18, 2);
+            entity.Property(e => e.TaxRate).HasPrecision(18, 2);
             entity.Property(e => e.ShippingCost).HasPrecision(18, 2);
             entity.Property(e => e.DiscountAmount).HasPrecision(18, 2);
             entity.Property(e => e.TotalAmount).HasPrecision(18, 2);
@@ -342,10 +344,15 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(e => e.Status).HasConversion<string>();
             entity.Property(e => e.Priority).HasConversion<string>();
 
-            entity.Property(e => e.ShippingCarrier).HasMaxLength(100);
+            entity.Property(e => e.Carrier).HasMaxLength(100);
             entity.Property(e => e.TrackingNumber).HasMaxLength(100);
-            entity.Property(e => e.ShippingMethod).HasMaxLength(50);
+            entity.Property(e => e.ShippingMethod).HasMaxLength(100);
             entity.Property(e => e.CustomerReference).HasMaxLength(100);
+            entity.Property(e => e.PickedBy).HasMaxLength(100);
+            entity.Property(e => e.PackedBy).HasMaxLength(100);
+            entity.Property(e => e.ShippedBy).HasMaxLength(100);
+            entity.Property(e => e.Notes).HasMaxLength(1000);
+            entity.Property(e => e.InternalNotes).HasMaxLength(1000);
 
             entity.HasOne(e => e.Business)
                   .WithMany()
