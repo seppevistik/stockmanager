@@ -16,7 +16,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { PurchaseOrderService } from '../../../services/purchase-order.service';
 import { ReceiptService } from '../../../services/receipt.service';
-import { PurchaseOrder, PurchaseOrderStatus } from '../../../models/purchase-order.model';
+import { LineItemStatus, PurchaseOrder, PurchaseOrderStatus } from '../../../models/purchase-order.model';
 import { Receipt } from '../../../models/receipt.model';
 
 @Component({
@@ -51,6 +51,24 @@ export class PurchaseOrderDetailComponent implements OnInit {
 
   displayedColumns: string[] = ['productSku', 'productName', 'quantityOrdered', 'quantityReceived', 'quantityOutstanding', 'unitPrice', 'lineTotal', 'status'];
   receiptsColumns: string[] = ['receiptNumber', 'receiptDate', 'receivedByName', 'status', 'actions'];
+
+  purchaseOrderStatusOptions = [
+    { value: PurchaseOrderStatus.Draft, label: 'Draft' },
+    { value: PurchaseOrderStatus.Submitted, label: 'Submitted' },
+    { value: PurchaseOrderStatus.Confirmed, label: 'Confirmed' },
+    { value: PurchaseOrderStatus.Receiving, label: 'Receiving' },
+    { value: PurchaseOrderStatus.PartiallyReceived, label: 'Partially Received' },
+    { value: PurchaseOrderStatus.Completed, label: 'Completed' },
+    { value: PurchaseOrderStatus.Cancelled, label: 'Cancelled' }
+  ];
+
+    lineItemStatusOptions = [
+    { value: LineItemStatus.Pending, label: 'Pending' },
+    { value: LineItemStatus.PartiallyReceived, label: 'PartiallyReceived' },
+    { value: LineItemStatus.FullyReceived, label: 'FullyReceived' },
+    { value: LineItemStatus.Cancelled, label: 'Cancelled' },
+    { value: LineItemStatus.ShortShipped, label: 'ShortShipped' }
+  ];
 
   constructor(
     private route: ActivatedRoute,
@@ -97,28 +115,40 @@ export class PurchaseOrderDetailComponent implements OnInit {
   }
 
   getStatusColor(status: PurchaseOrderStatus): string {
-    const colors: { [key: string]: string } = {
-      'Draft': 'primary',
-      'Submitted': 'accent',
-      'Confirmed': 'accent',
-      'Receiving': 'warn',
-      'PartiallyReceived': 'warn',
-      'Completed': '',
-      'Cancelled': ''
+    const colors: { [key: number]: string } = {
+      0: 'primary',
+      1: 'accent',
+      2: 'accent',
+      3: 'warn',
+      4: 'warn',
+      5: '',
+      6: ''
     };
     return colors[status] || '';
   }
 
   getLineStatusColor(status: string): string {
     const colors: { [key: string]: string } = {
-      'Pending': 'primary',
-      'PartiallyReceived': 'accent',
-      'FullyReceived': '',
-      'Cancelled': '',
-      'ShortShipped': 'warn'
+      0: 'primary',
+      1: 'accent',
+      2: '',
+      3: '',
+      4: 'warn'
     };
     return colors[status] || '';
   }
+
+  getStatusLabel(status: PurchaseOrderStatus): string {
+    const statusOption = this.purchaseOrderStatusOptions.find(opt => opt.value === status);
+    return statusOption ? statusOption.label : status.toString();
+  }
+
+  getLineStatusLabel(status: LineItemStatus): string {
+    const statusOption = this.lineItemStatusOptions.find(opt => opt.value === status);
+    return statusOption ? statusOption.label : status.toString();
+  }
+
+
 
   canEdit(): boolean {
     return this.purchaseOrder?.status === PurchaseOrderStatus.Draft;
@@ -257,23 +287,23 @@ export class PurchaseOrderDetailComponent implements OnInit {
 
   getReceiptStatusColor(status: string): string {
     const colors: { [key: string]: string } = {
-      'Draft': 'primary',
-      'Validated': '',
-      'PendingValidation': 'warn',
-      'Approved': '',
-      'Rejected': '',
-      'Completed': ''
+      0: 'primary',
+      1: '',
+      2: 'warn',
+      3: '',
+      4: '',
+      5: ''
     };
     return colors[status] || '';
   }
 
   getReceiptStatusLabel(status: string): string {
     const labels: { [key: string]: string } = {
-      'InProgress': 'In Progress',
-      'PendingValidation': 'Pending Validation',
-      'Validated': 'Validated',
-      'Completed': 'Completed',
-      'Rejected': 'Rejected'
+      0: 'In Progress',
+      1: 'Pending Validation',
+      2: 'Validated',
+      3: 'Completed',
+      4: 'Rejected'
     };
     return labels[status] || status;
   }

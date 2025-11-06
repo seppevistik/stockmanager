@@ -17,7 +17,7 @@
         <mat-card-title>
           {{ purchaseOrder.orderNumber }}
           <mat-chip>
-            {{ purchaseOrder.status }}
+            {{ getStatusLabel(purchaseOrder.status) }}
           </mat-chip>
         </mat-card-title>
         <mat-card-subtitle>{{ purchaseOrder.companyName }}</mat-card-subtitle>
@@ -146,7 +146,7 @@
             <th mat-header-cell *matHeaderCellDef>Status</th>
             <td mat-cell *matCellDef="let line">
               <mat-chip [color]="getLineStatusColor(line.status)" class="status-chip">
-                {{ line.status }}
+                {{ getLineStatusLabel(line.status) }}
               </mat-chip>
             </td>
           </ng-container>

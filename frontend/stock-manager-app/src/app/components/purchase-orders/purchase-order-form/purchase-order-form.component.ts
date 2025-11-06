@@ -17,6 +17,7 @@ import { CompanyService } from '../../../services/company.service';
 import { ProductService } from '../../../services/product.service';
 import { Company } from '../../../models/company.model';
 import { Product } from '../../../models/product.model';
+import { PurchaseOrderStatus } from '../../../models/purchase-order.model';
 
 @Component({
   selector: 'app-purchase-order-form',
@@ -151,7 +152,7 @@ export class PurchaseOrderFormComponent implements OnInit {
     this.purchaseOrderService.getById(id).subscribe({
       next: (po) => {
         // Only allow editing draft orders
-        if (po.status !== 'Draft') {
+        if (po.status !== PurchaseOrderStatus.Draft) {
           this.snackBar.open('Only draft purchase orders can be edited', 'Close', { duration: 3000 });
           this.router.navigate(['/purchase-orders']);
           return;

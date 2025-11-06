@@ -1,15 +1,15 @@
 export enum ReceiptStatus {
-  InProgress = 'InProgress',
-  PendingValidation = 'PendingValidation',
-  Validated = 'Validated',
-  Completed = 'Completed',
-  Rejected = 'Rejected'
+  InProgress = 1,
+  PendingValidation = 2,
+  Validated = 3,
+  Completed = 4,
+  Rejected = 5
 }
 
 export enum ItemCondition {
-  Good = 'Good',
-  Damaged = 'Damaged',
-  Defective = 'Defective'
+  Good = 0,
+  Damaged = 1,
+  Defective = 2
 }
 
 export interface Receipt {

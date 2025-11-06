@@ -1,6 +1,6 @@
 export enum ProductStatus {
-  Active = 'Active',
-  Inactive = 'Inactive'
+  Active = 0,
+  Inactive = 1
 }
 
 export interface ProductSupplier {

@@ -123,7 +123,7 @@
         <div *ngIf="filteredReceipts.length === 0" class="empty-state">
           <mat-icon>receipt_long</mat-icon>
           <p>No receipts found</p>
-          <p class="hint">{{ searchTerm || statusFilter !== 'All' ? 'Try adjusting your filters' : 'Create your first receipt to get started' }}</p>
+          <p class="hint">{{ searchTerm || statusFilter !== -1 ? 'Try adjusting your filters' : 'Create your first receipt to get started' }}</p>
         </div>
       </div>
     </mat-card-content>

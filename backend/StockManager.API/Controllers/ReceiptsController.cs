@@ -19,7 +19,7 @@ public class ReceiptsController : ControllerBase
     }
 
     private int GetBusinessId() => int.Parse(User.FindFirst("BusinessId")?.Value ?? "0");
-    private int GetUserId() => int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+    private string GetUserId() => User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
 
     [HttpGet]
     public async Task<IActionResult> GetAll()

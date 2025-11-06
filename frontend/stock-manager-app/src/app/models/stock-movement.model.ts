@@ -1,8 +1,8 @@
 export enum StockMovementType {
-  StockIn = 'StockIn',
-  StockOut = 'StockOut',
-  StockTransfer = 'StockTransfer',
-  StockAdjustment = 'StockAdjustment'
+  StockIn = 0,
+  StockOut = 1,
+  StockTransfer = 2,
+  StockAdjustment = 3
 }
 
 export interface StockMovement {

@@ -41,13 +41,13 @@ export class StockMovementsListComponent implements OnInit {
   filteredMovements: StockMovement[] = [];
   loading = false;
   searchTerm = '';
-  selectedType: string = 'all';
+  selectedType: number = -1;
   startDate: Date | null = null;
   endDate: Date | null = null;
   displayedColumns: string[] = ['date', 'product', 'type', 'quantity', 'previousStock', 'newStock', 'user', 'reason'];
 
   movementTypes = [
-    { value: 'all', label: 'All Types' },
+    { value: -1, label: 'All Types' },
     { value: StockMovementType.StockIn, label: 'Stock In' },
     { value: StockMovementType.StockOut, label: 'Stock Out' },
     { value: StockMovementType.StockAdjustment, label: 'Adjustment' },
@@ -91,7 +91,7 @@ export class StockMovementsListComponent implements OnInit {
     }
 
     // Filter by movement type
-    if (this.selectedType !== 'all') {
+    if (this.selectedType !== -1) { //all
       filtered = filtered.filter(movement => movement.movementType === this.selectedType);
     }
 
@@ -108,7 +108,7 @@ export class StockMovementsListComponent implements OnInit {
 
   clearFilters(): void {
     this.searchTerm = '';
-    this.selectedType = 'all';
+    this.selectedType = -1;
     this.startDate = null;
     this.endDate = null;
     this.loadMovements();

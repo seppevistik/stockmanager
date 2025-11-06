@@ -45,7 +45,7 @@ public class ReceiptService
     }
 
     public virtual async Task<(bool Success, string? Error, ReceiptDto? Receipt)> CreateReceiptAsync(
-        CreateReceiptDto createDto, int businessId, int userId)
+        CreateReceiptDto createDto, int businessId, string userId)
     {
         // Validate purchase order
         var purchaseOrder = await _unitOfWork.PurchaseOrders.GetByIdWithDetailsAsync(createDto.PurchaseOrderId, businessId);
@@ -296,7 +296,7 @@ public class ReceiptService
     }
 
     public virtual async Task<(bool Success, string? Error)> ApproveReceiptAsync(
-        int id, ApproveReceiptDto approveDto, int businessId, int userId)
+        int id, ApproveReceiptDto approveDto, int businessId, string userId)
     {
         var receipt = await _unitOfWork.Receipts.GetByIdWithDetailsAsync(id, businessId);
         if (receipt == null)
@@ -322,7 +322,7 @@ public class ReceiptService
     }
 
     public virtual async Task<(bool Success, string? Error)> RejectReceiptAsync(
-        int id, RejectReceiptDto rejectDto, int businessId, int userId)
+        int id, RejectReceiptDto rejectDto, int businessId, string userId)
     {
         var receipt = await _unitOfWork.Receipts.GetByIdAsync(id);
         if (receipt == null || receipt.BusinessId != businessId)
@@ -347,7 +347,7 @@ public class ReceiptService
         return (true, null);
     }
 
-    public virtual async Task<(bool Success, string? Error)> CompleteReceiptAsync(int id, int businessId, int userId)
+    public virtual async Task<(bool Success, string? Error)> CompleteReceiptAsync(int id, int businessId, string userId)
     {
         var receipt = await _unitOfWork.Receipts.GetByIdWithDetailsAsync(id, businessId);
         if (receipt == null)
