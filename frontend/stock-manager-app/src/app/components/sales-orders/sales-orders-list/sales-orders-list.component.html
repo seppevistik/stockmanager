@@ -1,0 +1,243 @@
+<div class="sales-orders-container">
+  <div class="header">
+    <h1>Sales Orders</h1>
+    <button mat-raised-button color="primary" (click)="createSalesOrder()">
+      <mat-icon>add</mat-icon> New Sales Order
+    </button>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="statistics-grid" *ngIf="statistics">
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <div class="stat-icon">
+          <mat-icon>shopping_cart</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ statistics.totalOrders }}</div>
+          <div class="stat-label">Total Orders</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card confirmed">
+      <mat-card-content>
+        <div class="stat-icon">
+          <mat-icon>check_circle</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ statistics.confirmedOrders }}</div>
+          <div class="stat-label">Confirmed</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card in-progress">
+      <mat-card-content>
+        <div class="stat-icon">
+          <mat-icon>local_shipping</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ statistics.inProgress }}</div>
+          <div class="stat-label">In Progress</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card shipped">
+      <mat-card-content>
+        <div class="stat-icon">
+          <mat-icon>flight_takeoff</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ statistics.shippedToday }}</div>
+          <div class="stat-label">Shipped Today</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card overdue" *ngIf="statistics.overdueOrders > 0">
+      <mat-card-content>
+        <div class="stat-icon">
+          <mat-icon>warning</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ statistics.overdueOrders }}</div>
+          <div class="stat-label">Overdue</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card revenue">
+      <mat-card-content>
+        <div class="stat-icon">
+          <mat-icon>attach_money</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ formatCurrency(statistics.totalRevenue) }}</div>
+          <div class="stat-label">Total Revenue</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Filters -->
+  <mat-card class="filters-card">
+    <mat-card-content>
+      <div class="filters">
+        <mat-form-field class="search-field">
+          <mat-label>Search</mat-label>
+          <input matInput [formControl]="searchControl" placeholder="Search by order # or customer">
+          <mat-icon matPrefix>search</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Status</mat-label>
+          <mat-select [formControl]="statusFilter">
+            <mat-option [value]="null">All Status</mat-option>
+            <mat-option *ngFor="let status of statuses" [value]="status.value">
+              {{ status.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Priority</mat-label>
+          <mat-select [formControl]="priorityFilter">
+            <mat-option [value]="null">All Priorities</mat-option>
+            <mat-option *ngFor="let priority of priorities" [value]="priority.value">
+              {{ priority.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <button mat-stroked-button (click)="clearFilters()">
+          <mat-icon>clear</mat-icon> Clear Filters
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Sales Orders Table -->
+  <mat-card class="table-card">
+    <div *ngIf="loading" class="loading-container">
+      <mat-spinner></mat-spinner>
+    </div>
+
+    <div *ngIf="!loading" class="table-container">
+      <table mat-table [dataSource]="salesOrders" class="sales-orders-table">
+        <!-- Order Number Column -->
+        <ng-container matColumnDef="orderNumber">
+          <th mat-header-cell *matHeaderCellDef>Order #</th>
+          <td mat-cell *matCellDef="let order">
+            <a [routerLink]="['/sales-orders', order.id]" class="order-link">
+              {{ order.orderNumber }}
+            </a>
+          </td>
+        </ng-container>
+
+        <!-- Customer Column -->
+        <ng-container matColumnDef="customer">
+          <th mat-header-cell *matHeaderCellDef>Customer</th>
+          <td mat-cell *matCellDef="let order">
+            <div class="customer-info">
+              <div class="customer-name">{{ order.customerName }}</div>
+              <div class="customer-location">{{ order.shipToCity }}, {{ order.shipToState }}</div>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Order Date Column -->
+        <ng-container matColumnDef="orderDate">
+          <th mat-header-cell *matHeaderCellDef>Order Date</th>
+          <td mat-cell *matCellDef="let order">{{ formatDate(order.orderDate) }}</td>
+        </ng-container>
+
+        <!-- Required Date Column -->
+        <ng-container matColumnDef="requiredDate">
+          <th mat-header-cell *matHeaderCellDef>Required Date</th>
+          <td mat-cell *matCellDef="let order">{{ formatDate(order.requiredDate) }}</td>
+        </ng-container>
+
+        <!-- Status Column -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let order">
+            <mat-chip [color]="getStatusColor(order.status)">
+              {{ order.statusDisplay }}
+            </mat-chip>
+          </td>
+        </ng-container>
+
+        <!-- Priority Column -->
+        <ng-container matColumnDef="priority">
+          <th mat-header-cell *matHeaderCellDef>Priority</th>
+          <td mat-cell *matCellDef="let order">
+            <mat-chip [color]="getPriorityColor(order.priority)" class="priority-chip">
+              {{ order.priorityDisplay }}
+            </mat-chip>
+          </td>
+        </ng-container>
+
+        <!-- Total Amount Column -->
+        <ng-container matColumnDef="totalAmount">
+          <th mat-header-cell *matHeaderCellDef>Total</th>
+          <td mat-cell *matCellDef="let order" class="amount-cell">
+            <div class="amount">{{ formatCurrency(order.totalAmount) }}</div>
+            <div class="line-items">{{ order.totalLineItems }} items</div>
+          </td>
+        </ng-container>
+
+        <!-- Actions Column -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let order">
+            <button mat-icon-button [matMenuTriggerFor]="menu">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #menu="matMenu">
+              <button mat-menu-item (click)="viewSalesOrder(order)">
+                <mat-icon>visibility</mat-icon>
+                <span>View Details</span>
+              </button>
+              <button mat-menu-item (click)="editSalesOrder(order)" [disabled]="!canEdit(order)">
+                <mat-icon>edit</mat-icon>
+                <span>Edit</span>
+              </button>
+              <button mat-menu-item (click)="deleteSalesOrder(order)" [disabled]="!canDelete(order)">
+                <mat-icon>delete</mat-icon>
+                <span>Delete</span>
+              </button>
+            </mat-menu>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="clickable-row"
+            (click)="viewSalesOrder(row)"></tr>
+
+        <!-- No data row -->
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell no-data" [attr.colspan]="displayedColumns.length">
+            <div class="no-data-container">
+              <mat-icon>shopping_cart</mat-icon>
+              <p>No sales orders found</p>
+              <button mat-raised-button color="primary" (click)="createSalesOrder()">
+                <mat-icon>add</mat-icon> Create First Order
+              </button>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <mat-paginator
+      [length]="totalCount"
+      [pageSize]="pageSize"
+      [pageIndex]="pageIndex"
+      [pageSizeOptions]="[5, 10, 20, 50]"
+      (page)="onPageChange($event)"
+      showFirstLastButtons>
+    </mat-paginator>
+  </mat-card>
+</div>

@@ -1,0 +1,372 @@
+<div class="sales-order-detail-container" *ngIf="!loading && salesOrder">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <button mat-icon-button (click)="router.navigate(['/sales-orders'])">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="title-section">
+        <h1>{{ salesOrder.orderNumber }}</h1>
+        <div class="status-badges">
+          <mat-chip [color]="getStatusColor(salesOrder.status)">
+            {{ salesOrder.statusDisplay }}
+          </mat-chip>
+          <mat-chip [color]="getPriorityColor(salesOrder.priority)">
+            {{ salesOrder.priorityDisplay }}
+          </mat-chip>
+        </div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button mat-stroked-button (click)="onEdit()" *ngIf="canEdit()" [disabled]="actionInProgress">
+        <mat-icon>edit</mat-icon> Edit
+      </button>
+      <button mat-icon-button [matMenuTriggerFor]="actionsMenu" [disabled]="actionInProgress">
+        <mat-icon>more_vert</mat-icon>
+      </button>
+      <mat-menu #actionsMenu="matMenu">
+        <!-- Workflow Actions -->
+        <button mat-menu-item (click)="onSubmit()" *ngIf="canSubmit()">
+          <mat-icon>send</mat-icon>
+          <span>Submit for Review</span>
+        </button>
+        <button mat-menu-item (click)="onConfirm()" *ngIf="canConfirm()">
+          <mat-icon>check_circle</mat-icon>
+          <span>Confirm Order</span>
+        </button>
+        <button mat-menu-item (click)="onStartPicking()" *ngIf="canStartPicking()">
+          <mat-icon>playlist_add_check</mat-icon>
+          <span>Start Picking</span>
+        </button>
+        <button mat-menu-item (click)="onCompletePicking()" *ngIf="canCompletePicking()">
+          <mat-icon>done_all</mat-icon>
+          <span>Complete Picking</span>
+        </button>
+        <button mat-menu-item (click)="onStartPacking()" *ngIf="canStartPacking()">
+          <mat-icon>inventory_2</mat-icon>
+          <span>Start Packing</span>
+        </button>
+        <button mat-menu-item (click)="onCompletePacking()" *ngIf="canCompletePacking()">
+          <mat-icon>check_box</mat-icon>
+          <span>Complete Packing</span>
+        </button>
+        <button mat-menu-item (click)="onShip()" *ngIf="canShip()">
+          <mat-icon>local_shipping</mat-icon>
+          <span>Ship Order</span>
+        </button>
+        <button mat-menu-item (click)="onDeliver()" *ngIf="canDeliver()">
+          <mat-icon>done</mat-icon>
+          <span>Mark as Delivered</span>
+        </button>
+        <mat-divider *ngIf="canHold() || canRelease()"></mat-divider>
+        <button mat-menu-item (click)="onHold()" *ngIf="canHold()">
+          <mat-icon>pause</mat-icon>
+          <span>Place on Hold</span>
+        </button>
+        <button mat-menu-item (click)="onRelease()" *ngIf="canRelease()">
+          <mat-icon>play_arrow</mat-icon>
+          <span>Release from Hold</span>
+        </button>
+        <mat-divider *ngIf="canCancel() || canDelete()"></mat-divider>
+        <button mat-menu-item (click)="onCancel()" *ngIf="canCancel()">
+          <mat-icon color="warn">cancel</mat-icon>
+          <span>Cancel Order</span>
+        </button>
+        <button mat-menu-item (click)="onDelete()" *ngIf="canDelete()">
+          <mat-icon color="warn">delete</mat-icon>
+          <span>Delete Order</span>
+        </button>
+      </mat-menu>
+    </div>
+  </div>
+
+  <!-- Order Information Grid -->
+  <div class="info-grid">
+    <!-- Customer Information -->
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>person</mat-icon> Customer Information
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="info-row">
+          <span class="label">Customer:</span>
+          <span class="value">{{ salesOrder.customerName }}</span>
+        </div>
+        <div class="info-row" *ngIf="salesOrder.customerEmail">
+          <span class="label">Email:</span>
+          <span class="value">{{ salesOrder.customerEmail }}</span>
+        </div>
+        <div class="info-row" *ngIf="salesOrder.customerReference">
+          <span class="label">Reference:</span>
+          <span class="value">{{ salesOrder.customerReference }}</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Shipping Address -->
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>local_shipping</mat-icon> Shipping Address
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="address">
+          <div>{{ salesOrder.shipToName }}</div>
+          <div>{{ salesOrder.shipToAddress }}</div>
+          <div>{{ salesOrder.shipToCity }}, {{ salesOrder.shipToState }} {{ salesOrder.shipToPostalCode }}</div>
+          <div>{{ salesOrder.shipToCountry }}</div>
+          <div *ngIf="salesOrder.shipToPhone">{{ salesOrder.shipToPhone }}</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Order Dates -->
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>event</mat-icon> Dates
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="info-row">
+          <span class="label">Order Date:</span>
+          <span class="value">{{ formatDate(salesOrder.orderDate) }}</span>
+        </div>
+        <div class="info-row" *ngIf="salesOrder.requiredDate">
+          <span class="label">Required Date:</span>
+          <span class="value">{{ formatDate(salesOrder.requiredDate) }}</span>
+        </div>
+        <div class="info-row" *ngIf="salesOrder.promisedDate">
+          <span class="label">Promised Date:</span>
+          <span class="value">{{ formatDate(salesOrder.promisedDate) }}</span>
+        </div>
+        <div class="info-row" *ngIf="salesOrder.shippedDate">
+          <span class="label">Shipped Date:</span>
+          <span class="value">{{ formatDate(salesOrder.shippedDate) }}</span>
+        </div>
+        <div class="info-row" *ngIf="salesOrder.deliveredDate">
+          <span class="label">Delivered Date:</span>
+          <span class="value">{{ formatDate(salesOrder.deliveredDate) }}</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Shipping Details -->
+    <mat-card *ngIf="salesOrder.shippingMethod || salesOrder.trackingNumber || salesOrder.carrier">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>flight_takeoff</mat-icon> Shipping Details
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="info-row" *ngIf="salesOrder.shippingMethod">
+          <span class="label">Method:</span>
+          <span class="value">{{ salesOrder.shippingMethod }}</span>
+        </div>
+        <div class="info-row" *ngIf="salesOrder.carrier">
+          <span class="label">Carrier:</span>
+          <span class="value">{{ salesOrder.carrier }}</span>
+        </div>
+        <div class="info-row" *ngIf="salesOrder.trackingNumber">
+          <span class="label">Tracking:</span>
+          <span class="value">{{ salesOrder.trackingNumber }}</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Order Lines Table -->
+  <mat-card class="lines-card">
+    <mat-card-header>
+      <mat-card-title>Order Items ({{ salesOrder.lines.length }})</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="table-container">
+        <table mat-table [dataSource]="salesOrder.lines" class="lines-table">
+          <!-- Product SKU Column -->
+          <ng-container matColumnDef="productSku">
+            <th mat-header-cell *matHeaderCellDef>SKU</th>
+            <td mat-cell *matCellDef="let line">{{ line.productSku }}</td>
+          </ng-container>
+
+          <!-- Product Name Column -->
+          <ng-container matColumnDef="productName">
+            <th mat-header-cell *matHeaderCellDef>Product</th>
+            <td mat-cell *matCellDef="let line">
+              <div class="product-info">
+                <div class="product-name">{{ line.productName }}</div>
+                <div class="product-description" *ngIf="line.productDescription">
+                  {{ line.productDescription }}
+                </div>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Quantity Ordered Column -->
+          <ng-container matColumnDef="quantityOrdered">
+            <th mat-header-cell *matHeaderCellDef>Ordered</th>
+            <td mat-cell *matCellDef="let line">{{ line.quantityOrdered }}</td>
+          </ng-container>
+
+          <!-- Quantity Picked Column -->
+          <ng-container matColumnDef="quantityPicked">
+            <th mat-header-cell *matHeaderCellDef>Picked</th>
+            <td mat-cell *matCellDef="let line">{{ line.quantityPicked }}</td>
+          </ng-container>
+
+          <!-- Quantity Shipped Column -->
+          <ng-container matColumnDef="quantityShipped">
+            <th mat-header-cell *matHeaderCellDef>Shipped</th>
+            <td mat-cell *matCellDef="let line">{{ line.quantityShipped }}</td>
+          </ng-container>
+
+          <!-- Quantity Outstanding Column -->
+          <ng-container matColumnDef="quantityOutstanding">
+            <th mat-header-cell *matHeaderCellDef>Outstanding</th>
+            <td mat-cell *matCellDef="let line">
+              <span [class.warning]="line.quantityOutstanding > 0">
+                {{ line.quantityOutstanding }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Unit Price Column -->
+          <ng-container matColumnDef="unitPrice">
+            <th mat-header-cell *matHeaderCellDef>Unit Price</th>
+            <td mat-cell *matCellDef="let line">{{ formatCurrency(line.unitPrice) }}</td>
+          </ng-container>
+
+          <!-- Line Total Column -->
+          <ng-container matColumnDef="lineTotal">
+            <th mat-header-cell *matHeaderCellDef>Total</th>
+            <td mat-cell *matCellDef="let line" class="amount-cell">
+              {{ formatCurrency(line.lineTotal) }}
+            </td>
+          </ng-container>
+
+          <!-- Status Column -->
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let line">
+              <mat-chip [color]="getLineStatusColor(line.status)">
+                {{ line.statusDisplay }}
+              </mat-chip>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Financial Summary -->
+  <mat-card class="summary-card">
+    <mat-card-header>
+      <mat-card-title>Financial Summary</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="summary-grid">
+        <div class="summary-row">
+          <span class="label">Subtotal:</span>
+          <span class="value">{{ formatCurrency(salesOrder.subTotal) }}</span>
+        </div>
+        <div class="summary-row" *ngIf="salesOrder.discountAmount > 0">
+          <span class="label">Discount:</span>
+          <span class="value discount">-{{ formatCurrency(salesOrder.discountAmount) }}</span>
+        </div>
+        <div class="summary-row">
+          <span class="label">Tax ({{ salesOrder.taxRate }}%):</span>
+          <span class="value">{{ formatCurrency(salesOrder.taxAmount) }}</span>
+        </div>
+        <div class="summary-row" *ngIf="salesOrder.shippingCost > 0">
+          <span class="label">Shipping:</span>
+          <span class="value">{{ formatCurrency(salesOrder.shippingCost) }}</span>
+        </div>
+        <mat-divider></mat-divider>
+        <div class="summary-row total">
+          <span class="label">Total Amount:</span>
+          <span class="value">{{ formatCurrency(salesOrder.totalAmount) }}</span>
+        </div>
+      </div>
+
+      <div class="quantity-summary">
+        <div class="qty-row">
+          <span class="label">Total Items:</span>
+          <span class="value">{{ salesOrder.totalLineItems }}</span>
+        </div>
+        <div class="qty-row">
+          <span class="label">Total Quantity Ordered:</span>
+          <span class="value">{{ salesOrder.totalQuantityOrdered }}</span>
+        </div>
+        <div class="qty-row" *ngIf="salesOrder.totalQuantityPicked > 0">
+          <span class="label">Total Quantity Picked:</span>
+          <span class="value">{{ salesOrder.totalQuantityPicked }}</span>
+        </div>
+        <div class="qty-row" *ngIf="salesOrder.totalQuantityShipped > 0">
+          <span class="label">Total Quantity Shipped:</span>
+          <span class="value">{{ salesOrder.totalQuantityShipped }}</span>
+        </div>
+        <div class="qty-row" *ngIf="salesOrder.totalQuantityOutstanding > 0">
+          <span class="label">Total Quantity Outstanding:</span>
+          <span class="value warning">{{ salesOrder.totalQuantityOutstanding }}</span>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Notes -->
+  <mat-card *ngIf="salesOrder.notes || salesOrder.internalNotes">
+    <mat-card-header>
+      <mat-card-title>Notes</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="notes-section" *ngIf="salesOrder.notes">
+        <h4>Customer Notes:</h4>
+        <p>{{ salesOrder.notes }}</p>
+      </div>
+      <div class="notes-section" *ngIf="salesOrder.internalNotes">
+        <h4>Internal Notes:</h4>
+        <p class="internal-notes">{{ salesOrder.internalNotes }}</p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Audit Information -->
+  <mat-card class="audit-card">
+    <mat-card-content>
+      <div class="audit-info">
+        <div class="audit-item">
+          <mat-icon>person</mat-icon>
+          <span>Created by {{ salesOrder.createdBy }} on {{ formatDateTime(salesOrder.createdAt) }}</span>
+        </div>
+        <div class="audit-item" *ngIf="salesOrder.updatedAt">
+          <mat-icon>update</mat-icon>
+          <span>Last updated {{ formatDateTime(salesOrder.updatedAt) }}</span>
+        </div>
+        <div class="audit-item" *ngIf="salesOrder.pickedBy">
+          <mat-icon>playlist_add_check</mat-icon>
+          <span>Picked by {{ salesOrder.pickedBy }}</span>
+        </div>
+        <div class="audit-item" *ngIf="salesOrder.packedBy">
+          <mat-icon>inventory_2</mat-icon>
+          <span>Packed by {{ salesOrder.packedBy }}</span>
+        </div>
+        <div class="audit-item" *ngIf="salesOrder.shippedBy">
+          <mat-icon>local_shipping</mat-icon>
+          <span>Shipped by {{ salesOrder.shippedBy }}</span>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
+
+<!-- Loading State -->
+<div class="loading-container" *ngIf="loading">
+  <mat-spinner></mat-spinner>
+  <p>Loading order details...</p>
+</div>

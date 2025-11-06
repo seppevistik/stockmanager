@@ -120,13 +120,16 @@ builder.Services.AddScoped<IStockMovementRepository, StockMovementRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Register Services
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<StockMovementService>();
 builder.Services.AddScoped<CompanyService>();
 builder.Services.AddScoped<InventoryUpdateService>();
 builder.Services.AddScoped<PurchaseOrderService>();
 builder.Services.AddScoped<ReceiptService>();
+builder.Services.AddScoped<SalesOrderService>();
 
 var app = builder.Build();
 

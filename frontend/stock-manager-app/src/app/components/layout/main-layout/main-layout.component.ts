@@ -30,9 +30,14 @@ export class MainLayoutComponent implements OnInit {
   currentUser: User | null = null;
 
   menuItems = [
-    { path: '/dashboard', icon: 'dashboard', label: 'Dashboard' },
-    { path: '/products', icon: 'inventory_2', label: 'Products' },
-    { path: '/stock-movements', icon: 'swap_horiz', label: 'Stock Movements' }
+    { path: '/dashboard', icon: 'dashboard', label: 'Dashboard', roles: [] },
+    { path: '/products', icon: 'inventory_2', label: 'Products', roles: [] },
+    { path: '/stock-movements', icon: 'swap_horiz', label: 'Stock Movements', roles: [] },
+    { path: '/companies', icon: 'business', label: 'Companies', roles: [] },
+    { path: '/purchase-orders', icon: 'shopping_cart', label: 'Purchase Orders', roles: [] },
+    { path: '/receipts', icon: 'receipt_long', label: 'Receipts', roles: [] },
+    { path: '/sales-orders', icon: 'point_of_sale', label: 'Sales Orders', roles: [] },
+    { path: '/users', icon: 'people', label: 'User Management', roles: [0] } // Admin only
   ];
 
   constructor(private authService: AuthService) {}
@@ -41,6 +46,12 @@ export class MainLayoutComponent implements OnInit {
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
     });
+  }
+
+  shouldShowMenuItem(item: any): boolean {
+    if (!this.currentUser) return false;
+    if (item.roles.length === 0) return true; // Available to all roles
+    return item.roles.includes(this.currentUser.role);
   }
 
   logout(): void {

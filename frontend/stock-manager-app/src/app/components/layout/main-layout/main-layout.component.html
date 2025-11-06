@@ -9,10 +9,12 @@
 
     <mat-nav-list>
       @for (item of menuItems; track item.path) {
-        <a mat-list-item [routerLink]="item.path" routerLinkActive="active">
-          <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
-          <span matListItemTitle>{{ item.label }}</span>
-        </a>
+        @if (shouldShowMenuItem(item)) {
+          <a mat-list-item [routerLink]="item.path" routerLinkActive="active">
+            <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+            <span matListItemTitle>{{ item.label }}</span>
+          </a>
+        }
       }
     </mat-nav-list>
   </mat-sidenav>
@@ -42,6 +44,10 @@
           </div>
         }
         <mat-divider></mat-divider>
+        <button mat-menu-item routerLink="/profile">
+          <mat-icon>person</mat-icon>
+          <span>My Profile</span>
+        </button>
         <button mat-menu-item (click)="logout()">
           <mat-icon>logout</mat-icon>
           <span>Logout</span>
