@@ -64,8 +64,9 @@ public class UserService
 
         // Get active session counts
         var userIds = users.Select(u => u.Id).ToList();
+        var now = DateTime.UtcNow;
         var activeSessionCounts = await _context.RefreshTokens
-            .Where(rt => userIds.Contains(rt.UserId) && rt.IsActive)
+            .Where(rt => userIds.Contains(rt.UserId) && rt.RevokedAt == null && rt.ExpiresAt > now)
             .GroupBy(rt => rt.UserId)
             .Select(g => new { UserId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.UserId, x => x.Count);
@@ -241,8 +242,9 @@ public class UserService
         // If deactivating, revoke all refresh tokens
         if (!user.IsActive)
         {
+            var now = DateTime.UtcNow;
             var refreshTokens = await _context.RefreshTokens
-                .Where(rt => rt.UserId == userId && rt.IsActive)
+                .Where(rt => rt.UserId == userId && rt.RevokedAt == null && rt.ExpiresAt > now)
                 .ToListAsync();
 
             foreach (var token in refreshTokens)
@@ -300,8 +302,9 @@ public class UserService
         }
 
         // Revoke all active refresh tokens
+        var now = DateTime.UtcNow;
         var refreshTokens = await _context.RefreshTokens
-            .Where(rt => rt.UserId == userId && rt.IsActive)
+            .Where(rt => rt.UserId == userId && rt.RevokedAt == null && rt.ExpiresAt > now)
             .ToListAsync();
 
         foreach (var token in refreshTokens)
