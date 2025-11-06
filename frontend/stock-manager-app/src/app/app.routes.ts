@@ -97,6 +97,24 @@ export const routes: Routes = [
         loadComponent: () => import('./components/receipts/receipt-detail/receipt-detail.component').then(m => m.ReceiptDetailComponent)
       },
       {
+        path: 'sales-orders',
+        loadComponent: () => import('./components/sales-orders/sales-orders-list/sales-orders-list.component').then(m => m.SalesOrdersListComponent)
+      },
+      {
+        path: 'sales-orders/new',
+        loadComponent: () => import('./components/sales-orders/sales-order-form/sales-order-form.component').then(m => m.SalesOrderFormComponent),
+        data: { roles: [UserRole.Admin, UserRole.Manager] }
+      },
+      {
+        path: 'sales-orders/edit/:id',
+        loadComponent: () => import('./components/sales-orders/sales-order-form/sales-order-form.component').then(m => m.SalesOrderFormComponent),
+        data: { roles: [UserRole.Admin, UserRole.Manager] }
+      },
+      {
+        path: 'sales-orders/:id',
+        loadComponent: () => import('./components/sales-orders/sales-order-detail/sales-order-detail.component').then(m => m.SalesOrderDetailComponent)
+      },
+      {
         path: 'profile',
         loadComponent: () => import('./components/profile/user-profile.component').then(m => m.UserProfileComponent)
       },

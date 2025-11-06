@@ -36,6 +36,7 @@ export class MainLayoutComponent implements OnInit {
     { path: '/companies', icon: 'business', label: 'Companies', roles: [] },
     { path: '/purchase-orders', icon: 'shopping_cart', label: 'Purchase Orders', roles: [] },
     { path: '/receipts', icon: 'receipt_long', label: 'Receipts', roles: [] },
+    { path: '/sales-orders', icon: 'point_of_sale', label: 'Sales Orders', roles: [] },
     { path: '/users', icon: 'people', label: 'User Management', roles: [0] } // Admin only
   ];
 
