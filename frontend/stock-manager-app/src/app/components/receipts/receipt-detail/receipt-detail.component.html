@@ -17,7 +17,7 @@
         <mat-card-title>
           {{ receipt.receiptNumber }}
           <mat-chip>
-            {{ receipt.status }}
+            {{ getStatusLabel(receipt.status) }}
           </mat-chip>
           <mat-chip *ngIf="receipt.hasVariances" color="warn">
             <mat-icon>warning</mat-icon> Has Variances

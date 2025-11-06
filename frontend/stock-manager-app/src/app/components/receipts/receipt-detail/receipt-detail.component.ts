@@ -107,6 +107,17 @@ export class ReceiptDetailComponent implements OnInit {
     return colors[status] || '';
   }
 
+  getStatusLabel(status: ReceiptStatus): string {
+    const labels: { [key: string]: string } = {
+      'InProgress': 'In Progress',
+      'PendingValidation': 'Pending Validation',
+      'Validated': 'Validated',
+      'Completed': 'Completed',
+      'Rejected': 'Rejected'
+    };
+    return labels[status] || status.toString();
+  }
+
   getConditionColor(condition: ItemCondition): string {
     const colors: { [key: string]: string } = {
       'Good': '',

@@ -128,6 +128,11 @@ export class ReceiptsListComponent implements OnInit {
     return colors[status] || '';
   }
 
+  getStatusLabel(status: ReceiptStatus): string {
+    const statusOption = this.statuses.find(s => s.value === status);
+    return statusOption ? statusOption.label : status.toString();
+  }
+
   viewReceipt(receipt: Receipt): void {
     this.router.navigate(['/receipts', receipt.id]);
   }

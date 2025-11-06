@@ -267,6 +267,17 @@ export class PurchaseOrderDetailComponent implements OnInit {
     return colors[status] || '';
   }
 
+  getReceiptStatusLabel(status: string): string {
+    const labels: { [key: string]: string } = {
+      'InProgress': 'In Progress',
+      'PendingValidation': 'Pending Validation',
+      'Validated': 'Validated',
+      'Completed': 'Completed',
+      'Rejected': 'Rejected'
+    };
+    return labels[status] || status;
+  }
+
   back(): void {
     this.router.navigate(['/purchase-orders']);
   }

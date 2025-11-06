@@ -167,6 +167,11 @@ export class PurchaseOrdersListComponent implements OnInit {
     }
   }
 
+  getStatusLabel(status: PurchaseOrderStatus): string {
+    const statusOption = this.statusOptions.find(opt => opt.value === status);
+    return statusOption ? statusOption.label : status.toString();
+  }
+
   canEdit(order: PurchaseOrder): boolean {
     return order.status === PurchaseOrderStatus.Draft;
   }

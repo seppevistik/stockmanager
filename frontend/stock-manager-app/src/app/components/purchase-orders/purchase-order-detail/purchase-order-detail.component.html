@@ -207,7 +207,7 @@
             <th mat-header-cell *matHeaderCellDef>Status</th>
             <td mat-cell *matCellDef="let receipt">
               <mat-chip [color]="getReceiptStatusColor(receipt.status)" class="status-chip">
-                {{ receipt.status }}
+                {{ getReceiptStatusLabel(receipt.status) }}
               </mat-chip>
             </td>
           </ng-container>
