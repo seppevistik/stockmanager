@@ -129,6 +129,7 @@ builder.Services.AddScoped<CompanyService>();
 builder.Services.AddScoped<InventoryUpdateService>();
 builder.Services.AddScoped<PurchaseOrderService>();
 builder.Services.AddScoped<ReceiptService>();
+builder.Services.AddScoped<SalesOrderService>();
 
 var app = builder.Build();
 
