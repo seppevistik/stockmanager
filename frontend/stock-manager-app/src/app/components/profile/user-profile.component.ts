@@ -10,6 +10,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatChipsModule } from '@angular/material/chips';
 import { AuthService } from '../../services/auth.service';
 import { UserProfile, UpdateUserProfileRequest } from '../../models/user.model';
 import { ChangePasswordDialogComponent } from './change-password-dialog.component';
@@ -28,7 +29,8 @@ import { ChangePasswordDialogComponent } from './change-password-dialog.componen
     MatProgressSpinnerModule,
     MatSnackBarModule,
     MatDialogModule,
-    MatDividerModule
+    MatDividerModule,
+    MatChipsModule
   ],
   templateUrl: './user-profile.component.html',
   styleUrl: './user-profile.component.scss'

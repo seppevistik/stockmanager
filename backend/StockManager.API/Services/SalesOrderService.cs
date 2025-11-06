@@ -173,7 +173,7 @@ public class SalesOrderService
             {
                 ProductId = lineRequest.ProductId,
                 ProductName = product.Name,
-                ProductSku = product.Sku,
+                ProductSku = product.SKU,
                 QuantityOrdered = lineRequest.QuantityOrdered,
                 QuantityPicked = 0,
                 QuantityShipped = 0,
@@ -307,7 +307,7 @@ public class SalesOrderService
                 SalesOrderId = salesOrder.Id,
                 ProductId = lineRequest.ProductId,
                 ProductName = product.Name,
-                ProductSku = product.Sku,
+                ProductSku = product.SKU,
                 QuantityOrdered = lineRequest.QuantityOrdered,
                 QuantityPicked = 0,
                 QuantityShipped = 0,

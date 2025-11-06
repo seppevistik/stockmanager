@@ -1,19 +1,19 @@
 export enum PurchaseOrderStatus {
-  Draft = 'Draft',
-  Submitted = 'Submitted',
-  Confirmed = 'Confirmed',
-  Receiving = 'Receiving',
-  PartiallyReceived = 'PartiallyReceived',
-  Completed = 'Completed',
-  Cancelled = 'Cancelled'
+  Draft = 0,
+  Submitted = 1,
+  Confirmed = 2,
+  Receiving = 3,
+  PartiallyReceived = 4,
+  Completed = 5,
+  Cancelled = 6
 }
 
 export enum LineItemStatus {
-  Pending = 'Pending',
-  PartiallyReceived = 'PartiallyReceived',
-  FullyReceived = 'FullyReceived',
-  Cancelled = 'Cancelled',
-  ShortShipped = 'ShortShipped'
+  Pending = 0,
+  PartiallyReceived = 1,
+  FullyReceived = 2,
+  Cancelled = 3,
+  ShortShipped = 4
 }
 
 export interface PurchaseOrder {

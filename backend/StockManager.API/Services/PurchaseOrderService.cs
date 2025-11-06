@@ -54,7 +54,7 @@ public class PurchaseOrderService
     }
 
     public virtual async Task<(bool Success, string? Error, PurchaseOrderDto? PurchaseOrder)> CreatePurchaseOrderAsync(
-        CreatePurchaseOrderDto createDto, int businessId, int userId)
+        CreatePurchaseOrderDto createDto, int businessId, string userId)
     {
         // Validate company is a supplier
         var company = await _unitOfWork.Companies.GetByIdAsync(createDto.CompanyId);
@@ -126,7 +126,7 @@ public class PurchaseOrderService
             TotalAmount = totalAmount,
             Notes = createDto.Notes,
             SupplierReference = createDto.SupplierReference,
-            CreatedBy = userId,
+            CreatedBy = userId.ToString(),
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
             Lines = lines
@@ -177,7 +177,7 @@ public class PurchaseOrderService
         return (true, null);
     }
 
-    public virtual async Task<(bool Success, string? Error)> SubmitPurchaseOrderAsync(int id, int businessId, int userId)
+    public virtual async Task<(bool Success, string? Error)> SubmitPurchaseOrderAsync(int id, int businessId, string userId)
     {
         var purchaseOrder = await _unitOfWork.PurchaseOrders.GetByIdAsync(id);
         if (purchaseOrder == null || purchaseOrder.BusinessId != businessId)
@@ -225,7 +225,7 @@ public class PurchaseOrderService
     }
 
     public virtual async Task<(bool Success, string? Error)> CancelPurchaseOrderAsync(
-        int id, string reason, int businessId, int userId)
+        int id, string reason, int businessId, string userId)
     {
         var purchaseOrder = await _unitOfWork.PurchaseOrders.GetByIdWithDetailsAsync(id, businessId);
         if (purchaseOrder == null)

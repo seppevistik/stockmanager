@@ -189,13 +189,14 @@ public class AuthService
 
     private async Task RemoveOldRefreshTokensAsync(string userId)
     {
+        var now = DateTime.UtcNow;
         var oldTokens = await _context.RefreshTokens
-            .Where(t => t.UserId == userId && (t.IsRevoked || t.IsExpired))
+            .Where(t => t.UserId == userId && (t.RevokedAt != null || t.ExpiresAt <= now))
             .ToListAsync();
 
         // Also limit active tokens to 5 per user
         var activeTokens = await _context.RefreshTokens
-            .Where(t => t.UserId == userId && t.IsActive)
+            .Where(t => t.UserId == userId && t.RevokedAt == null && t.ExpiresAt > now)
             .OrderByDescending(t => t.CreatedAt)
             .Skip(5)
             .ToListAsync();

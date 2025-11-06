@@ -150,7 +150,7 @@
           <div class="no-data">
             <mat-icon>swap_horiz</mat-icon>
             <p>No stock movements found</p>
-            @if (searchTerm || selectedType !== 'all' || startDate || endDate) {
+            @if (searchTerm || selectedType !== -1 || startDate || endDate) {
               <p class="hint">Try adjusting your filters</p>
               <button mat-raised-button color="primary" (click)="clearFilters()">
                 Clear Filters

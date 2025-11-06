@@ -47,11 +47,11 @@ export class ReceiptsListComponent implements OnInit {
   displayedColumns: string[] = ['receiptNumber', 'purchaseOrderNumber', 'companyName', 'receiptDate', 'receivedByName', 'status', 'hasVariances', 'actions'];
 
   // Filter properties
-  statusFilter: string = 'All';
+  statusFilter: number = -1;
   searchTerm: string = '';
 
   statuses = [
-    { value: 'All', label: 'All Statuses' },
+    { value: -1, label: 'All Statuses' },
     { value: ReceiptStatus.InProgress, label: 'In Progress' },
     { value: ReceiptStatus.PendingValidation, label: 'Pending Validation' },
     { value: ReceiptStatus.Validated, label: 'Validated' },
@@ -91,7 +91,7 @@ export class ReceiptsListComponent implements OnInit {
     let filtered = [...this.receipts];
 
     // Apply status filter
-    if (this.statusFilter !== 'All') {
+    if (this.statusFilter !== -1) {
       filtered = filtered.filter(r => r.status === this.statusFilter);
     }
 
@@ -126,6 +126,11 @@ export class ReceiptsListComponent implements OnInit {
       'Rejected': ''
     };
     return colors[status] || '';
+  }
+
+  getStatusLabel(status: ReceiptStatus): string {
+    const statusOption = this.statuses.find(s => s.value === status);
+    return statusOption ? statusOption.label : status.toString();
   }
 
   viewReceipt(receipt: Receipt): void {

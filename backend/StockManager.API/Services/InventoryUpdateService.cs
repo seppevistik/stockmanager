@@ -13,7 +13,7 @@ public class InventoryUpdateService
         _unitOfWork = unitOfWork;
     }
 
-    public virtual async Task<(bool Success, string? Error)> ApplyReceiptToInventoryAsync(Receipt receipt, int userId)
+    public virtual async Task<(bool Success, string? Error)> ApplyReceiptToInventoryAsync(Receipt receipt, string userId)
     {
         try
         {

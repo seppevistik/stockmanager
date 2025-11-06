@@ -1,33 +1,33 @@
 // Enums
 export enum SalesOrderStatus {
-  Draft = 'Draft',
-  Submitted = 'Submitted',
-  Confirmed = 'Confirmed',
-  AwaitingPickup = 'AwaitingPickup',
-  Picking = 'Picking',
-  Picked = 'Picked',
-  Packing = 'Packing',
-  Packed = 'Packed',
-  Shipped = 'Shipped',
-  Delivered = 'Delivered',
-  Cancelled = 'Cancelled',
-  OnHold = 'OnHold'
+  Draft = 0,
+  Submitted = 1,
+  Confirmed = 2,
+  AwaitingPickup = 3,
+  Picking = 4,
+  Picked = 5,
+  Packing = 6,
+  Packed = 7,
+  Shipped = 8,
+  Delivered = 9,
+  Cancelled = 10,
+  OnHold = 11
 }
 
 export enum SalesOrderLineStatus {
-  Pending = 'Pending',
-  Allocated = 'Allocated',
-  Picked = 'Picked',
-  Packed = 'Packed',
-  Shipped = 'Shipped',
-  Cancelled = 'Cancelled'
+  Pending = 0,
+  Allocated = 1,
+  Picked = 2,
+  Packed = 3,
+  Shipped = 4,
+  Cancelled = 5
 }
 
 export enum Priority {
-  Low = 'Low',
-  Normal = 'Normal',
-  High = 'High',
-  Urgent = 'Urgent'
+  Low = 0,
+  Normal = 1,
+  High = 2,
+  Urgent = 3
 }
 
 // Main DTOs
