@@ -136,7 +136,7 @@ public class ReceiptService
             PurchaseOrderId = createDto.PurchaseOrderId,
             ReceiptNumber = receiptNumber,
             ReceiptDate = createDto.ReceiptDate,
-            ReceivedBy = userId,
+            ReceivedBy = userId.ToString(),
             Status = initialStatus,
             SupplierDeliveryNote = createDto.SupplierDeliveryNote,
             Notes = createDto.Notes,
@@ -311,7 +311,7 @@ public class ReceiptService
 
         receipt.Status = ReceiptStatus.Validated;
         receipt.VarianceNotes = approveDto.VarianceNotes;
-        receipt.ValidatedBy = userId;
+        receipt.ValidatedBy = userId.ToString();
         receipt.ValidatedAt = DateTime.UtcNow;
         receipt.UpdatedAt = DateTime.UtcNow;
 
@@ -337,7 +337,7 @@ public class ReceiptService
 
         receipt.Status = ReceiptStatus.Rejected;
         receipt.Notes = $"{receipt.Notes}\n\nREJECTED: {rejectDto.Reason}";
-        receipt.ValidatedBy = userId;
+        receipt.ValidatedBy = userId.ToString();
         receipt.ValidatedAt = DateTime.UtcNow;
         receipt.UpdatedAt = DateTime.UtcNow;
 

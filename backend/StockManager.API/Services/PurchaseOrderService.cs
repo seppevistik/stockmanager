@@ -126,7 +126,7 @@ public class PurchaseOrderService
             TotalAmount = totalAmount,
             Notes = createDto.Notes,
             SupplierReference = createDto.SupplierReference,
-            CreatedBy = userId,
+            CreatedBy = userId.ToString(),
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
             Lines = lines

@@ -38,7 +38,7 @@ public class UserService
             usersQuery = usersQuery.Where(u =>
                 u.FirstName.ToLower().Contains(searchLower) ||
                 u.LastName.ToLower().Contains(searchLower) ||
-                u.Email.ToLower().Contains(searchLower));
+                (u.Email != null && u.Email.ToLower().Contains(searchLower)));
         }
 
         if (query.Role.HasValue)
