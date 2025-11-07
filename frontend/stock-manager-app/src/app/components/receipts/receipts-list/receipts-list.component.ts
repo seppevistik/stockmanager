@@ -118,12 +118,12 @@ export class ReceiptsListComponent implements OnInit {
   }
 
   getStatusColor(status: ReceiptStatus): string {
-    const colors: { [key: string]: string } = {
-      'InProgress': 'primary',
-      'PendingValidation': 'warn',
-      'Validated': 'accent',
-      'Completed': '',
-      'Rejected': ''
+    const colors: { [key: number]: string } = {
+      [ReceiptStatus.InProgress]: 'primary',
+      [ReceiptStatus.PendingValidation]: 'warn',
+      [ReceiptStatus.Validated]: 'accent',
+      [ReceiptStatus.Completed]: '',
+      [ReceiptStatus.Rejected]: ''
     };
     return colors[status] || '';
   }
