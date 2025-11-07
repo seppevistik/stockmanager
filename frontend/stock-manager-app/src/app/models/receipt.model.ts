@@ -1,9 +1,9 @@
 export enum ReceiptStatus {
-  InProgress = 1,
-  PendingValidation = 2,
-  Validated = 3,
-  Completed = 4,
-  Rejected = 5
+  InProgress = 0,
+  PendingValidation = 1,
+  Validated = 2,
+  Completed = 3,
+  Rejected = 4
 }
 
 export enum ItemCondition {
