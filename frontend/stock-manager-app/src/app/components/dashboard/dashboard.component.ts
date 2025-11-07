@@ -46,7 +46,11 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    // Chart will be created after data is loaded
+    // Try to create chart if data is already loaded
+    if (this.salesCostsData.length > 0) {
+      // Use setTimeout to ensure view is fully rendered
+      setTimeout(() => this.createChart(), 0);
+    }
   }
 
   loadDashboard(): void {
@@ -84,7 +88,8 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     this.dashboardService.getSalesCostsData(30).subscribe({
       next: (data) => {
         this.salesCostsData = data;
-        this.createChart();
+        // Use setTimeout to ensure view is fully rendered before creating chart
+        setTimeout(() => this.createChart(), 0);
       },
       error: (error) => {
         console.error('Error loading sales/costs data:', error);
@@ -93,7 +98,13 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   }
 
   createChart(): void {
-    if (!this.salesCostsChart || this.salesCostsData.length === 0) {
+    // If canvas not available yet, retry after short delay
+    if (!this.salesCostsChart) {
+      setTimeout(() => this.createChart(), 100);
+      return;
+    }
+
+    if (this.salesCostsData.length === 0) {
       return;
     }
 
