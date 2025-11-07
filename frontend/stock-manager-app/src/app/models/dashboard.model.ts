@@ -19,3 +19,9 @@ export interface RecentActivity {
   userName: string;
   createdAt: Date;
 }
+
+export interface DailySalesData {
+  date: string;
+  sales: number;
+  costs: number;
+}

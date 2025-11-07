@@ -17,7 +17,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { PurchaseOrderService } from '../../../services/purchase-order.service';
 import { ReceiptService } from '../../../services/receipt.service';
 import { LineItemStatus, PurchaseOrder, PurchaseOrderStatus } from '../../../models/purchase-order.model';
-import { Receipt } from '../../../models/receipt.model';
+import { Receipt, ReceiptStatus } from '../../../models/receipt.model';
 
 @Component({
   selector: 'app-purchase-order-detail',
@@ -64,10 +64,10 @@ export class PurchaseOrderDetailComponent implements OnInit {
 
     lineItemStatusOptions = [
     { value: LineItemStatus.Pending, label: 'Pending' },
-    { value: LineItemStatus.PartiallyReceived, label: 'PartiallyReceived' },
-    { value: LineItemStatus.FullyReceived, label: 'FullyReceived' },
+    { value: LineItemStatus.PartiallyReceived, label: 'Partially Received' },
+    { value: LineItemStatus.FullyReceived, label: 'Fully Received' },
     { value: LineItemStatus.Cancelled, label: 'Cancelled' },
-    { value: LineItemStatus.ShortShipped, label: 'ShortShipped' }
+    { value: LineItemStatus.ShortShipped, label: 'Short Shipped' }
   ];
 
   constructor(
@@ -127,13 +127,13 @@ export class PurchaseOrderDetailComponent implements OnInit {
     return colors[status] || '';
   }
 
-  getLineStatusColor(status: string): string {
-    const colors: { [key: string]: string } = {
-      0: 'primary',
-      1: 'accent',
-      2: '',
-      3: '',
-      4: 'warn'
+  getLineStatusColor(status: LineItemStatus): string {
+    const colors: { [key: number]: string } = {
+      [LineItemStatus.Pending]: 'primary',
+      [LineItemStatus.PartiallyReceived]: 'accent',
+      [LineItemStatus.FullyReceived]: '',
+      [LineItemStatus.Cancelled]: '',
+      [LineItemStatus.ShortShipped]: 'warn'
     };
     return colors[status] || '';
   }
@@ -285,27 +285,26 @@ export class PurchaseOrderDetailComponent implements OnInit {
     this.router.navigate(['/receipts', receipt.id]);
   }
 
-  getReceiptStatusColor(status: string): string {
-    const colors: { [key: string]: string } = {
-      0: 'primary',
-      1: '',
-      2: 'warn',
-      3: '',
-      4: '',
-      5: ''
+  getReceiptStatusColor(status: ReceiptStatus): string {
+    const colors: { [key: number]: string } = {
+      [ReceiptStatus.InProgress]: 'primary',
+      [ReceiptStatus.PendingValidation]: 'warn',
+      [ReceiptStatus.Validated]: 'accent',
+      [ReceiptStatus.Completed]: '',
+      [ReceiptStatus.Rejected]: ''
     };
     return colors[status] || '';
   }
 
-  getReceiptStatusLabel(status: string): string {
-    const labels: { [key: string]: string } = {
-      0: 'In Progress',
-      1: 'Pending Validation',
-      2: 'Validated',
-      3: 'Completed',
-      4: 'Rejected'
+  getReceiptStatusLabel(status: ReceiptStatus): string {
+    const labels: { [key: number]: string } = {
+      [ReceiptStatus.InProgress]: 'In Progress',
+      [ReceiptStatus.PendingValidation]: 'Pending Validation',
+      [ReceiptStatus.Validated]: 'Validated',
+      [ReceiptStatus.Completed]: 'Completed',
+      [ReceiptStatus.Rejected]: 'Rejected'
     };
-    return labels[status] || status;
+    return labels[status] || status.toString();
   }
 
   back(): void {

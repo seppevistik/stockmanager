@@ -94,4 +94,53 @@ public class DashboardController : ControllerBase
             outOfStock
         });
     }
+
+    [HttpGet("sales-costs")]
+    public async Task<IActionResult> GetSalesCostsData([FromQuery] int days = 30)
+    {
+        var businessId = GetBusinessId();
+        var startDate = DateTime.UtcNow.Date.AddDays(-days);
+
+        // Get sales orders with their lines and products for the specified period
+        var salesOrders = await _context.SalesOrders
+            .Include(so => so.Lines)
+            .ThenInclude(line => line.Product)
+            .Where(so => so.BusinessId == businessId
+                && !so.IsDeleted
+                && so.OrderDate >= startDate
+                && (so.Status == StockManager.Core.Enums.SalesOrderStatus.Shipped
+                    || so.Status == StockManager.Core.Enums.SalesOrderStatus.Delivered))
+            .ToListAsync();
+
+        // Group by date and calculate daily sales and costs
+        var dailyData = salesOrders
+            .GroupBy(so => so.OrderDate.Date)
+            .Select(g => new
+            {
+                date = g.Key.ToString("yyyy-MM-dd"),
+                sales = g.Sum(so => so.TotalAmount),
+                costs = g.SelectMany(so => so.Lines)
+                    .Sum(line => line.QuantityShipped * line.Product.CostPerUnit)
+            })
+            .OrderBy(d => d.date)
+            .ToList();
+
+        // Fill in missing dates with zero values
+        var result = new List<object>();
+        for (int i = 0; i < days; i++)
+        {
+            var date = startDate.AddDays(i);
+            var dateStr = date.ToString("yyyy-MM-dd");
+            var existingData = dailyData.FirstOrDefault(d => d.date == dateStr);
+
+            result.Add(new
+            {
+                date = dateStr,
+                sales = existingData?.sales ?? 0m,
+                costs = existingData?.costs ?? 0m
+            });
+        }
+
+        return Ok(result);
+    }
 }

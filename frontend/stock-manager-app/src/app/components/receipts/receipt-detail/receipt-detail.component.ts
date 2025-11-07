@@ -119,12 +119,21 @@ export class ReceiptDetailComponent implements OnInit {
   }
 
   getConditionColor(condition: ItemCondition): string {
-    const colors: { [key: string]: string } = {
-      'Good': '',
-      'Damaged': 'warn',
-      'Defective': ''
+    const colors: { [key: number]: string } = {
+      [ItemCondition.Good]: '',
+      [ItemCondition.Damaged]: 'warn',
+      [ItemCondition.Defective]: ''
     };
     return colors[condition] || '';
+  }
+
+  getConditionLabel(condition: ItemCondition): string {
+    const labels: { [key: number]: string } = {
+      [ItemCondition.Good]: 'Good',
+      [ItemCondition.Damaged]: 'Damaged',
+      [ItemCondition.Defective]: 'Defective'
+    };
+    return labels[condition] || condition.toString();
   }
 
   canApprove(): boolean {
