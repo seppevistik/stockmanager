@@ -1,0 +1,232 @@
+<div class="business-settings">
+  <!-- Statistics Section -->
+  <div class="settings-section" *ngIf="statistics">
+    <h2>User Statistics</h2>
+    <div class="stats-grid">
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-value">{{ statistics.Total }}</div>
+          <div class="stat-label">Total Users</div>
+        </mat-card-content>
+      </mat-card>
+      <mat-card class="stat-card active">
+        <mat-card-content>
+          <div class="stat-value">{{ statistics.Active }}</div>
+          <div class="stat-label">Active</div>
+        </mat-card-content>
+      </mat-card>
+      <mat-card class="stat-card inactive">
+        <mat-card-content>
+          <div class="stat-value">{{ statistics.Inactive }}</div>
+          <div class="stat-label">Inactive</div>
+        </mat-card-content>
+      </mat-card>
+      <mat-card class="stat-card admin">
+        <mat-card-content>
+          <div class="stat-value">{{ statistics.Admins }}</div>
+          <div class="stat-label">Admins</div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <!-- User Management Section -->
+  <div class="settings-section">
+    <div class="section-header">
+      <h2>User Management</h2>
+      <button mat-raised-button color="primary" (click)="openCreateUserDialog()">
+        <mat-icon>person_add</mat-icon>
+        Add New User
+      </button>
+    </div>
+
+    <mat-card>
+      <mat-card-content>
+        <!-- Search -->
+        <div class="search-section">
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>Search users</mat-label>
+            <input matInput [(ngModel)]="searchTerm" (keyup.enter)="applyFilter()" placeholder="Search by name or email">
+            <mat-icon matPrefix>search</mat-icon>
+            <button mat-icon-button matSuffix *ngIf="searchTerm" (click)="searchTerm = ''; applyFilter()">
+              <mat-icon>clear</mat-icon>
+            </button>
+          </mat-form-field>
+          <button mat-raised-button (click)="applyFilter()">
+            <mat-icon>search</mat-icon>
+            Search
+          </button>
+        </div>
+
+        <!-- Users Table -->
+        <div class="table-container">
+          <table mat-table [dataSource]="dataSource" matSort>
+            <!-- Name Column -->
+            <ng-container matColumnDef="name">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
+              <td mat-cell *matCellDef="let user">
+                {{ user.firstName }} {{ user.lastName }}
+              </td>
+            </ng-container>
+
+            <!-- Email Column -->
+            <ng-container matColumnDef="email">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Email</th>
+              <td mat-cell *matCellDef="let user">{{ user.email }}</td>
+            </ng-container>
+
+            <!-- Role Column -->
+            <ng-container matColumnDef="role">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Role</th>
+              <td mat-cell *matCellDef="let user">
+                <mat-chip [ngClass]="getRoleClass(user.role)">
+                  {{ user.roleName }}
+                </mat-chip>
+              </td>
+            </ng-container>
+
+            <!-- Status Column -->
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
+              <td mat-cell *matCellDef="let user">
+                <mat-chip [ngClass]="user.isActive ? 'status-active' : 'status-inactive'">
+                  {{ user.isActive ? 'Active' : 'Inactive' }}
+                </mat-chip>
+              </td>
+            </ng-container>
+
+            <!-- Last Login Column -->
+            <ng-container matColumnDef="lastLogin">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Last Login</th>
+              <td mat-cell *matCellDef="let user">{{ formatDate(user.lastLoginAt) }}</td>
+            </ng-container>
+
+            <!-- Actions Column -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>Actions</th>
+              <td mat-cell *matCellDef="let user">
+                <button mat-icon-button [matTooltip]="'Edit user'" (click)="openEditUserDialog(user)">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button
+                        [matTooltip]="user.isActive ? 'Deactivate user' : 'Activate user'"
+                        (click)="toggleUserStatus(user)"
+                        [disabled]="user.id === currentUser?.userId">
+                  <mat-icon>{{ user.isActive ? 'block' : 'check_circle' }}</mat-icon>
+                </button>
+                <button mat-icon-button
+                        [matTooltip]="'Revoke all sessions'"
+                        (click)="revokeUserSessions(user)"
+                        *ngIf="user.activeSessionCount > 0"
+                        [disabled]="user.id === currentUser?.userId">
+                  <mat-icon>logout</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+            <!-- No Data Row -->
+            <tr class="mat-row" *matNoDataRow>
+              <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+                <div class="no-data">
+                  <mat-icon>people_outline</mat-icon>
+                  <p>No users found</p>
+                </div>
+              </td>
+            </tr>
+          </table>
+        </div>
+
+        <mat-paginator
+          [pageSizeOptions]="[10, 25, 50, 100]"
+          showFirstLastButtons>
+        </mat-paginator>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <!-- Business Settings Section -->
+  <div class="settings-section">
+    <h2>Business Information</h2>
+    <mat-card>
+      <mat-card-content>
+        <form [formGroup]="businessForm">
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Business Name</mat-label>
+              <input matInput formControlName="businessName" [readonly]="!isEditingBusiness">
+              <mat-icon matSuffix>business</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="half-width">
+              <mat-label>Contact Email</mat-label>
+              <input matInput formControlName="contactEmail" type="email" [readonly]="!isEditingBusiness">
+              <mat-icon matSuffix>email</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="half-width">
+              <mat-label>Contact Phone</mat-label>
+              <input matInput formControlName="contactPhone" [readonly]="!isEditingBusiness">
+              <mat-icon matSuffix>phone</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Address</mat-label>
+              <input matInput formControlName="address" [readonly]="!isEditingBusiness">
+              <mat-icon matSuffix>location_on</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="third-width">
+              <mat-label>City</mat-label>
+              <input matInput formControlName="city" [readonly]="!isEditingBusiness">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="third-width">
+              <mat-label>Country</mat-label>
+              <input matInput formControlName="country" [readonly]="!isEditingBusiness">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="third-width">
+              <mat-label>Postal Code</mat-label>
+              <input matInput formControlName="postalCode" [readonly]="!isEditingBusiness">
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Tax Number</mat-label>
+              <input matInput formControlName="taxNumber" [readonly]="!isEditingBusiness">
+              <mat-icon matSuffix>receipt</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <div class="action-buttons">
+            <button mat-raised-button color="primary" *ngIf="!isEditingBusiness" (click)="editBusinessSettings()">
+              <mat-icon>edit</mat-icon>
+              Edit Business Settings
+            </button>
+            <button mat-raised-button color="primary" *ngIf="isEditingBusiness" (click)="saveBusinessSettings()" [disabled]="!businessForm.valid">
+              <mat-icon>save</mat-icon>
+              Save Changes
+            </button>
+            <button mat-button *ngIf="isEditingBusiness" (click)="cancelBusinessEdit()">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

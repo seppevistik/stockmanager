@@ -1,0 +1,81 @@
+<h2 mat-dialog-title>Create New User</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="userForm">
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Email</mat-label>
+        <input matInput formControlName="email" type="email" placeholder="user@example.com">
+        <mat-icon matSuffix>email</mat-icon>
+        <mat-error *ngIf="userForm.get('email')?.hasError('required')">
+          Email is required
+        </mat-error>
+        <mat-error *ngIf="userForm.get('email')?.hasError('email')">
+          Please enter a valid email
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="half-width">
+        <mat-label>First Name</mat-label>
+        <input matInput formControlName="firstName" placeholder="John">
+        <mat-icon matSuffix>person</mat-icon>
+        <mat-error *ngIf="userForm.get('firstName')?.hasError('required')">
+          First name is required
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="half-width">
+        <mat-label>Last Name</mat-label>
+        <input matInput formControlName="lastName" placeholder="Doe">
+        <mat-icon matSuffix>person</mat-icon>
+        <mat-error *ngIf="userForm.get('lastName')?.hasError('required')">
+          Last name is required
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Role</mat-label>
+        <mat-select formControlName="role">
+          <mat-option *ngFor="let role of roles" [value]="role.value">
+            {{ role.label }}
+          </mat-option>
+        </mat-select>
+        <mat-icon matSuffix>badge</mat-icon>
+      </mat-form-field>
+    </div>
+
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Temporary Password</mat-label>
+        <input matInput formControlName="temporaryPassword" [type]="hidePassword ? 'password' : 'text'">
+        <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" type="button">
+          <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+        <mat-hint>User will be prompted to change this password on first login</mat-hint>
+        <mat-error *ngIf="userForm.get('temporaryPassword')?.hasError('required')">
+          Temporary password is required
+        </mat-error>
+        <mat-error *ngIf="userForm.get('temporaryPassword')?.hasError('minlength')">
+          Password must be at least 6 characters
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <div class="form-row">
+      <mat-checkbox formControlName="sendWelcomeEmail">
+        Send welcome email with login instructions
+      </mat-checkbox>
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancel</button>
+  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="!userForm.valid">
+    Create User
+  </button>
+</mat-dialog-actions>

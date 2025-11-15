@@ -1,0 +1,91 @@
+.user-settings {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.settings-section {
+  margin-bottom: 30px;
+
+  h2 {
+    font-size: 20px;
+    font-weight: 500;
+    margin-bottom: 16px;
+    color: rgba(0, 0, 0, 0.87);
+  }
+}
+
+mat-card {
+  margin-bottom: 20px;
+}
+
+mat-card-content {
+  padding: 24px;
+}
+
+.form-row {
+  margin-bottom: 16px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.info-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+  padding: 16px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+}
+
+.info-item {
+  font-size: 14px;
+
+  strong {
+    display: block;
+    margin-bottom: 4px;
+    color: rgba(0, 0, 0, 0.6);
+    font-weight: 500;
+  }
+}
+
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  align-items: center;
+}
+
+.preference-item {
+  margin-bottom: 20px;
+
+  mat-slide-toggle {
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .preference-description {
+    margin: 0;
+    padding-left: 52px;
+    font-size: 13px;
+    color: rgba(0, 0, 0, 0.6);
+  }
+}
+
+mat-divider {
+  margin: 40px 0;
+}
+
+mat-form-field {
+  ::ng-deep .mat-mdc-text-field-wrapper {
+    background-color: white;
+  }
+}
+
+button {
+  mat-icon {
+    margin-right: 8px;
+  }
+}

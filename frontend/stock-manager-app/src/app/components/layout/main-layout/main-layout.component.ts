@@ -84,8 +84,9 @@ export class MainLayoutComponent implements OnInit {
     {
       icon: 'settings',
       label: 'Settings',
-      roles: [0], // Admin only
+      roles: [], // Available to all users
       children: [
+        { path: '/settings', icon: 'tune', label: 'General Settings', roles: [] },
         { path: '/users', icon: 'people', label: 'User Management', roles: [0] }
       ]
     }

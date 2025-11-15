@@ -1,0 +1,175 @@
+<div class="user-settings">
+  <!-- Profile Information Section -->
+  <div class="settings-section">
+    <h2>Profile Information</h2>
+    <mat-card>
+      <mat-card-content>
+        <form [formGroup]="profileForm">
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>First Name</mat-label>
+              <input matInput formControlName="firstName" [readonly]="!isEditingProfile">
+              <mat-icon matSuffix>person</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Last Name</mat-label>
+              <input matInput formControlName="lastName" [readonly]="!isEditingProfile">
+              <mat-icon matSuffix>person</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Email</mat-label>
+              <input matInput formControlName="email" type="email">
+              <mat-icon matSuffix>email</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <div class="info-row" *ngIf="userProfile">
+            <div class="info-item">
+              <strong>Role:</strong> {{ getRoleName() }}
+            </div>
+            <div class="info-item">
+              <strong>Status:</strong> {{ getAccountStatus() }}
+            </div>
+            <div class="info-item">
+              <strong>Member Since:</strong> {{ formatDate(userProfile.createdAt) }}
+            </div>
+            <div class="info-item" *ngIf="userProfile.lastLoginAt">
+              <strong>Last Login:</strong> {{ formatDate(userProfile.lastLoginAt) }}
+            </div>
+          </div>
+
+          <div class="action-buttons">
+            <button mat-raised-button color="primary" *ngIf="!isEditingProfile" (click)="editProfile()">
+              <mat-icon>edit</mat-icon>
+              Edit Profile
+            </button>
+            <button mat-raised-button color="primary" *ngIf="isEditingProfile" (click)="saveProfile()" [disabled]="!profileForm.valid">
+              <mat-icon>save</mat-icon>
+              Save Changes
+            </button>
+            <button mat-button *ngIf="isEditingProfile" (click)="cancelProfileEdit()">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <!-- Password Management Section -->
+  <div class="settings-section">
+    <h2>Password Management</h2>
+    <mat-card>
+      <mat-card-content>
+        <div *ngIf="!isChangingPassword">
+          <p>Change your password to keep your account secure.</p>
+          <button mat-raised-button color="primary" (click)="startChangingPassword()">
+            <mat-icon>lock</mat-icon>
+            Change Password
+          </button>
+        </div>
+
+        <form [formGroup]="passwordForm" *ngIf="isChangingPassword">
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Current Password</mat-label>
+              <input matInput formControlName="currentPassword" [type]="hideCurrentPassword ? 'password' : 'text'">
+              <button mat-icon-button matSuffix (click)="hideCurrentPassword = !hideCurrentPassword" type="button">
+                <mat-icon>{{ hideCurrentPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>New Password</mat-label>
+              <input matInput formControlName="newPassword" [type]="hideNewPassword ? 'password' : 'text'">
+              <button mat-icon-button matSuffix (click)="hideNewPassword = !hideNewPassword" type="button">
+                <mat-icon>{{ hideNewPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+              <mat-hint>Minimum 6 characters</mat-hint>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Confirm New Password</mat-label>
+              <input matInput formControlName="confirmPassword" [type]="hideConfirmPassword ? 'password' : 'text'">
+              <button mat-icon-button matSuffix (click)="hideConfirmPassword = !hideConfirmPassword" type="button">
+                <mat-icon>{{ hideConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+              <mat-error *ngIf="passwordForm.hasError('passwordMismatch')">
+                Passwords do not match
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="action-buttons">
+            <button mat-raised-button color="primary" (click)="changePassword()" [disabled]="!passwordForm.valid">
+              <mat-icon>save</mat-icon>
+              Update Password
+            </button>
+            <button mat-button (click)="cancelPasswordChange()">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <!-- Preferences Section -->
+  <div class="settings-section">
+    <h2>Notification Preferences</h2>
+    <mat-card>
+      <mat-card-content>
+        <form [formGroup]="preferencesForm">
+          <div class="preference-item">
+            <mat-slide-toggle formControlName="emailNotifications">
+              Email Notifications
+            </mat-slide-toggle>
+            <p class="preference-description">Receive general notifications via email</p>
+          </div>
+
+          <div class="preference-item">
+            <mat-slide-toggle formControlName="lowStockAlerts">
+              Low Stock Alerts
+            </mat-slide-toggle>
+            <p class="preference-description">Get notified when products are running low</p>
+          </div>
+
+          <div class="preference-item">
+            <mat-slide-toggle formControlName="orderStatusUpdates">
+              Order Status Updates
+            </mat-slide-toggle>
+            <p class="preference-description">Receive updates on order status changes</p>
+          </div>
+
+          <div class="preference-item">
+            <mat-slide-toggle formControlName="weeklyReports">
+              Weekly Reports
+            </mat-slide-toggle>
+            <p class="preference-description">Receive weekly summary reports via email</p>
+          </div>
+
+          <div class="action-buttons">
+            <button mat-raised-button color="primary" (click)="savePreferences()">
+              <mat-icon>save</mat-icon>
+              Save Preferences
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

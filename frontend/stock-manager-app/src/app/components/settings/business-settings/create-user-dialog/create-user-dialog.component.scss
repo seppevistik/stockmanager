@@ -1,0 +1,22 @@
+mat-dialog-content {
+  min-width: 500px;
+  padding: 20px 24px;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.half-width {
+  flex: 1;
+}
+
+mat-checkbox {
+  margin-bottom: 12px;
+}

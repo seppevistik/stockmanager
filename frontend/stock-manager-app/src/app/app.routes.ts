@@ -133,6 +133,10 @@ export const routes: Routes = [
         loadComponent: () => import('./components/profile/user-profile.component').then(m => m.UserProfileComponent)
       },
       {
+        path: 'settings',
+        loadComponent: () => import('./components/settings/settings.component').then(m => m.SettingsComponent)
+      },
+      {
         path: 'users',
         loadComponent: () => import('./components/users/users-list.component').then(m => m.UsersListComponent),
         data: { roles: [UserRole.Admin] }
