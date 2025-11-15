@@ -212,7 +212,7 @@
             </mat-form-field>
           </div>
 
-          <div class="action-buttons">
+          <div class="action-buttons" *ngIf="isAdmin">
             <button mat-raised-button color="primary" *ngIf="!isEditingBusiness" (click)="editBusinessSettings()">
               <mat-icon>edit</mat-icon>
               Edit Business Settings
@@ -224,6 +224,10 @@
             <button mat-button *ngIf="isEditingBusiness" (click)="cancelBusinessEdit()">
               Cancel
             </button>
+          </div>
+          <div class="info-message" *ngIf="!isAdmin">
+            <mat-icon>info</mat-icon>
+            <p>Only administrators can edit business settings</p>
           </div>
         </form>
       </mat-card-content>
