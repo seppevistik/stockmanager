@@ -163,15 +163,15 @@ namespace StockManager.Data.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
-                    b.Property<int>("BusinessId")
-                        .HasColumnType("int");
-
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<int?>("CurrentBusinessId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -217,9 +217,6 @@ namespace StockManager.Data.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<int>("Role")
-                        .HasColumnType("int");
-
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
@@ -232,7 +229,7 @@ namespace StockManager.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BusinessId");
+                    b.HasIndex("CurrentBusinessId");
 
                     b.HasIndex("Email");
 
@@ -1362,6 +1359,45 @@ namespace StockManager.Data.Migrations
                     b.ToTable("StockMovements");
                 });
 
+            modelBuilder.Entity("StockManager.Core.Entities.UserBusiness", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BusinessId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BusinessId");
+
+                    b.HasIndex("UserId", "BusinessId")
+                        .IsUnique();
+
+                    b.ToTable("UserBusinesses");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -1415,13 +1451,12 @@ namespace StockManager.Data.Migrations
 
             modelBuilder.Entity("StockManager.Core.Entities.ApplicationUser", b =>
                 {
-                    b.HasOne("StockManager.Core.Entities.Business", "Business")
-                        .WithMany("Users")
-                        .HasForeignKey("BusinessId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                    b.HasOne("StockManager.Core.Entities.Business", "CurrentBusiness")
+                        .WithMany("CurrentUsers")
+                        .HasForeignKey("CurrentBusinessId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
-                    b.Navigation("Business");
+                    b.Navigation("CurrentBusiness");
                 });
 
             modelBuilder.Entity("StockManager.Core.Entities.Category", b =>
@@ -1691,20 +1726,43 @@ namespace StockManager.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("StockManager.Core.Entities.UserBusiness", b =>
+                {
+                    b.HasOne("StockManager.Core.Entities.Business", "Business")
+                        .WithMany("UserBusinesses")
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("StockManager.Core.Entities.ApplicationUser", "User")
+                        .WithMany("UserBusinesses")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Business");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("StockManager.Core.Entities.ApplicationUser", b =>
                 {
                     b.Navigation("RefreshTokens");
 
                     b.Navigation("StockMovements");
+
+                    b.Navigation("UserBusinesses");
                 });
 
             modelBuilder.Entity("StockManager.Core.Entities.Business", b =>
                 {
                     b.Navigation("Categories");
 
+                    b.Navigation("CurrentUsers");
+
                     b.Navigation("Products");
 
-                    b.Navigation("Users");
+                    b.Navigation("UserBusinesses");
                 });
 
             modelBuilder.Entity("StockManager.Core.Entities.Category", b =>
