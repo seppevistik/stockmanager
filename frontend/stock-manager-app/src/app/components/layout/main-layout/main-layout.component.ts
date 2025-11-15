@@ -115,6 +115,11 @@ export class MainLayoutComponent implements OnInit {
       next: (businesses) => {
         this.userBusinesses = businesses;
         this.loadingBusinesses = false;
+
+        // Auto-select business if user has only one and no current business selected
+        if (!this.currentUser?.businessId && businesses.length === 1) {
+          this.switchBusiness(businesses[0].businessId);
+        }
       },
       error: (error) => {
         console.error('Error loading user businesses:', error);
