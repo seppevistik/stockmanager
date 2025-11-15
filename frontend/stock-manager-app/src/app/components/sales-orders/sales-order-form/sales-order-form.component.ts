@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -27,6 +27,18 @@ import {
 } from '../../../models/sales-order.model';
 import { Customer } from '../../../models/customer.model';
 import { Product } from '../../../models/product.model';
+
+// Custom validator for future dates
+function futureDateValidator(control: AbstractControl): ValidationErrors | null {
+  if (!control.value) return null;
+
+  const selectedDate = new Date(control.value);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  selectedDate.setHours(0, 0, 0, 0);
+
+  return selectedDate < today ? { pastDate: true } : null;
+}
 
 @Component({
   selector: 'app-sales-order-form',
@@ -123,8 +135,8 @@ export class SalesOrderFormComponent implements OnInit {
 
       // Priority & Dates
       priority: [Priority.Normal, Validators.required],
-      requiredDate: [null],
-      promisedDate: [null],
+      requiredDate: [null, futureDateValidator],
+      promisedDate: [null, futureDateValidator],
 
       // Additional Info
       customerReference: [''],
@@ -196,6 +208,52 @@ export class SalesOrderFormComponent implements OnInit {
       productId: product.id,
       unitPrice: product.costPerUnit || 0
     });
+
+    // Show stock availability warning
+    const quantityOrdered = line.get('quantityOrdered')?.value || 1;
+    if (product.currentStock < quantityOrdered) {
+      this.snackBar.open(
+        `Warning: ${product.name} has only ${product.currentStock} units in stock. Ordered: ${quantityOrdered}`,
+        'Close',
+        { duration: 5000, panelClass: ['warning-snackbar'] }
+      );
+    } else if (product.currentStock - quantityOrdered < product.minimumStockLevel) {
+      this.snackBar.open(
+        `Warning: ${product.name} will be below minimum stock level (${product.minimumStockLevel}) after this order.`,
+        'Close',
+        { duration: 5000, panelClass: ['warning-snackbar'] }
+      );
+    }
+  }
+
+  getProductStock(productId: number): number {
+    const product = this.products.find(p => p.id === productId);
+    return product?.currentStock || 0;
+  }
+
+  isStockAvailable(index: number): boolean {
+    const line = this.lines.at(index);
+    const productId = line.get('productId')?.value;
+    const quantityOrdered = line.get('quantityOrdered')?.value || 0;
+    const product = this.products.find(p => p.id === productId);
+    return product ? product.currentStock >= quantityOrdered : true;
+  }
+
+  getStockWarning(index: number): string {
+    const line = this.lines.at(index);
+    const productId = line.get('productId')?.value;
+    const quantityOrdered = line.get('quantityOrdered')?.value || 0;
+    const product = this.products.find(p => p.id === productId);
+
+    if (!product || !productId) return '';
+
+    if (product.currentStock < quantityOrdered) {
+      return `Insufficient stock! Available: ${product.currentStock}`;
+    } else if (product.currentStock - quantityOrdered < product.minimumStockLevel) {
+      return `Below min. stock level after order (Min: ${product.minimumStockLevel})`;
+    } else {
+      return `In stock: ${product.currentStock} available`;
+    }
   }
 
   displayProduct(productId: number): string {
@@ -289,7 +347,7 @@ export class SalesOrderFormComponent implements OnInit {
         shipToName: customer.name,
         shipToAddress: customer.address || '',
         shipToCity: customer.city || '',
-        shipToState: '',
+        shipToState: customer.state || '',
         shipToPostalCode: customer.postalCode || '',
         shipToCountry: customer.country || 'USA',
         shipToPhone: customer.phone || ''

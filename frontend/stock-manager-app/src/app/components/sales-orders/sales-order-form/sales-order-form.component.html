@@ -109,6 +109,10 @@
             <input matInput [matDatepicker]="requiredPicker" formControlName="requiredDate">
             <mat-datepicker-toggle matSuffix [for]="requiredPicker"></mat-datepicker-toggle>
             <mat-datepicker #requiredPicker></mat-datepicker>
+            <mat-error *ngIf="form.get('requiredDate')?.hasError('pastDate')">
+              Required date cannot be in the past
+            </mat-error>
+            <mat-hint>When the customer needs the order</mat-hint>
           </mat-form-field>
 
           <mat-form-field>
@@ -116,6 +120,10 @@
             <input matInput [matDatepicker]="promisedPicker" formControlName="promisedDate">
             <mat-datepicker-toggle matSuffix [for]="promisedPicker"></mat-datepicker-toggle>
             <mat-datepicker #promisedPicker></mat-datepicker>
+            <mat-error *ngIf="form.get('promisedDate')?.hasError('pastDate')">
+              Promised date cannot be in the past
+            </mat-error>
+            <mat-hint>When you commit to deliver</mat-hint>
           </mat-form-field>
         </div>
       </mat-card-content>
@@ -152,10 +160,13 @@
             <!-- Quantity Column -->
             <ng-container matColumnDef="quantity">
               <th mat-header-cell *matHeaderCellDef>Quantity *</th>
-              <td mat-cell *matCellDef="let line">
+              <td mat-cell *matCellDef="let line; let i = index">
                 <mat-form-field [formGroup]="line" class="quantity-field">
                   <input matInput formControlName="quantityOrdered" type="number" min="0.01" step="1" required>
                   <mat-error>Required</mat-error>
+                  <mat-hint *ngIf="line.value.productId" [style.color]="!isStockAvailable(i) ? 'red' : 'inherit'">
+                    {{ getStockWarning(i) }}
+                  </mat-hint>
                 </mat-form-field>
               </td>
             </ng-container>
