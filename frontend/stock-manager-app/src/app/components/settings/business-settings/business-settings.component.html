@@ -1,6 +1,6 @@
 <div class="business-settings">
-  <!-- Statistics Section -->
-  <div class="settings-section" *ngIf="statistics">
+  <!-- Statistics Section (Admin/Manager Only) -->
+  <div class="settings-section" *ngIf="statistics && isManagerOrAbove">
     <h2>User Statistics</h2>
     <div class="stats-grid">
       <mat-card class="stat-card">
@@ -30,10 +30,10 @@
     </div>
   </div>
 
-  <mat-divider></mat-divider>
+  <mat-divider *ngIf="isManagerOrAbove"></mat-divider>
 
-  <!-- User Management Section -->
-  <div class="settings-section">
+  <!-- User Management Section (Admin/Manager Only) -->
+  <div class="settings-section" *ngIf="isManagerOrAbove">
     <div class="section-header">
       <h2>User Management</h2>
       <button mat-raised-button color="primary" (click)="openCreateUserDialog()">
@@ -149,9 +149,9 @@
     </mat-card>
   </div>
 
-  <mat-divider></mat-divider>
+  <mat-divider *ngIf="isManagerOrAbove"></mat-divider>
 
-  <!-- Business Settings Section -->
+  <!-- Business Information Section (All Users - Read Only for non-Admins) -->
   <div class="settings-section">
     <h2>Business Information</h2>
     <mat-card>

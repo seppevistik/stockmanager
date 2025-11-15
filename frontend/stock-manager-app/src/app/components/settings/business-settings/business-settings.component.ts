@@ -62,6 +62,7 @@ export class BusinessSettingsComponent implements OnInit {
   businessForm: FormGroup;
   isEditingBusiness = false;
   isAdmin = false;
+  isManagerOrAbove = false;
 
   constructor(
     private fb: FormBuilder,
@@ -88,8 +89,14 @@ export class BusinessSettingsComponent implements OnInit {
   ngOnInit(): void {
     this.currentUser = this.authService.getCurrentUser();
     this.isAdmin = this.authService.hasRole([0]); // Admin only
-    this.loadUsers();
-    this.loadStatistics();
+    this.isManagerOrAbove = this.authService.hasRole([0, 1]); // Admin or Manager
+
+    // Only load user management data for managers and above
+    if (this.isManagerOrAbove) {
+      this.loadUsers();
+      this.loadStatistics();
+    }
+
     this.loadBusinessSettings();
   }
 
