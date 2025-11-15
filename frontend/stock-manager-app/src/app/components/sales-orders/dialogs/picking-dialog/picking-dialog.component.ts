@@ -88,7 +88,7 @@ export interface PickedLineResult {
     }
 
     mat-dialog-content {
-      width: 750px;
+      width: 600px;
       padding: 16px 20px;
       overflow: hidden;
     }
@@ -111,7 +111,7 @@ export interface PickedLineResult {
     }
 
     th, td {
-      padding: 10px 12px;
+      padding: 8px 10px;
       text-align: left;
       border-bottom: 1px solid rgba(0, 0, 0, 0.12);
     }
@@ -119,19 +119,19 @@ export interface PickedLineResult {
     th {
       font-weight: 500;
       background-color: rgba(0, 0, 0, 0.04);
-      font-size: 0.9em;
+      font-size: 0.85em;
     }
 
     th:nth-child(1), td:nth-child(1) {
-      width: 50%;
+      width: 45%;
     }
 
     th:nth-child(2), td:nth-child(2) {
-      width: 15%;
+      width: 18%;
     }
 
     th:nth-child(3), td:nth-child(3) {
-      width: 35%;
+      width: 37%;
     }
 
     .text-center {
