@@ -84,10 +84,10 @@ export interface PickedLineResult {
   `,
   styles: [`
     mat-dialog-content {
-      min-width: 600px;
-      max-width: 700px;
-      max-height: 600px;
+      width: 750px;
+      max-height: 70vh;
       padding: 20px 24px;
+      overflow-y: auto;
     }
 
     p {
@@ -96,8 +96,8 @@ export interface PickedLineResult {
     }
 
     .picking-table {
-      overflow-x: auto;
       margin-bottom: 20px;
+      overflow: visible;
     }
 
     table {
