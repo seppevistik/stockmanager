@@ -14,7 +14,8 @@ public class Business : BaseEntity
     public string? TaxNumber { get; set; }
 
     // Navigation properties
-    public ICollection<ApplicationUser> Users { get; set; } = new List<ApplicationUser>();
+    public ICollection<UserBusiness> UserBusinesses { get; set; } = new List<UserBusiness>();
+    public ICollection<ApplicationUser> CurrentUsers { get; set; } = new List<ApplicationUser>();
     public ICollection<Product> Products { get; set; } = new List<Product>();
     public ICollection<Category> Categories { get; set; } = new List<Category>();
 }

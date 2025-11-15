@@ -12,6 +12,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     }
 
     public DbSet<Business> Businesses { get; set; }
+    public DbSet<UserBusiness> UserBusinesses { get; set; }
     public DbSet<Product> Products { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<StockMovement> StockMovements { get; set; }
@@ -43,13 +44,36 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         // ApplicationUser configuration
         builder.Entity<ApplicationUser>(entity =>
         {
-            entity.HasOne(e => e.Business)
-                  .WithMany(b => b.Users)
-                  .HasForeignKey(e => e.BusinessId)
-                  .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.CurrentBusiness)
+                  .WithMany(b => b.CurrentUsers)
+                  .HasForeignKey(e => e.CurrentBusinessId)
+                  .OnDelete(DeleteBehavior.SetNull)
+                  .IsRequired(false);
 
-            entity.HasIndex(e => e.BusinessId);
+            entity.HasIndex(e => e.CurrentBusinessId);
             entity.HasIndex(e => e.Email);
+        });
+
+        // UserBusiness configuration (many-to-many junction table with role)
+        builder.Entity<UserBusiness>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Role).HasConversion<string>();
+
+            entity.HasOne(e => e.User)
+                  .WithMany(u => u.UserBusinesses)
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Business)
+                  .WithMany(b => b.UserBusinesses)
+                  .HasForeignKey(e => e.BusinessId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasQueryFilter(e => !e.IsDeleted);
+            entity.HasIndex(e => new { e.UserId, e.BusinessId }).IsUnique();
+            entity.HasIndex(e => e.BusinessId);
+            entity.HasIndex(e => e.IsActive);
         });
 
         // Category configuration
