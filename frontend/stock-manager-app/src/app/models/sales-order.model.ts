@@ -35,9 +35,9 @@ export interface SalesOrder {
   id: number;
   orderNumber: string;
   businessId: number;
-  customerId: number;
-  customerName: string;
-  customerEmail: string;
+  customerId?: number;
+  customerName?: string;
+  customerEmail?: string;
 
   // Shipping Information
   shipToName: string;
@@ -131,7 +131,7 @@ export interface SalesOrderLine {
 
 // Create/Update Request DTOs
 export interface CreateSalesOrderRequest {
-  customerId: number;
+  customerId?: number;
 
   // Shipping Information
   shipToName: string;
@@ -171,7 +171,7 @@ export interface CreateSalesOrderLineRequest {
 }
 
 export interface UpdateSalesOrderRequest {
-  customerId: number;
+  customerId?: number;
 
   // Shipping Information
   shipToName: string;
@@ -303,8 +303,8 @@ export interface SalesOrderStatistics {
 export interface SalesOrderSummary {
   id: number;
   orderNumber: string;
-  customerId: number;
-  customerName: string;
+  customerId?: number;
+  customerName?: string;
   orderDate: Date;
   requiredDate?: Date;
   status: SalesOrderStatus;

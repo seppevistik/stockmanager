@@ -11,9 +11,9 @@ public class SalesOrderDto
     public int Id { get; set; }
     public string OrderNumber { get; set; } = string.Empty;
     public int BusinessId { get; set; }
-    public int CustomerId { get; set; }
-    public string CustomerName { get; set; } = string.Empty;
-    public string CustomerEmail { get; set; } = string.Empty;
+    public int? CustomerId { get; set; }
+    public string? CustomerName { get; set; }
+    public string? CustomerEmail { get; set; }
 
     // Shipping Information
     public string ShipToName { get; set; } = string.Empty;
@@ -109,8 +109,8 @@ public class SalesOrderLineDto
 // Create/Update Request DTOs
 public class CreateSalesOrderRequest
 {
-    [Required]
-    public int CustomerId { get; set; }
+    // Customer is optional - allows for daily summaries without specific customers
+    public int? CustomerId { get; set; }
 
     // Shipping Information
     [Required]
@@ -197,8 +197,8 @@ public class CreateSalesOrderLineRequest
 
 public class UpdateSalesOrderRequest
 {
-    [Required]
-    public int CustomerId { get; set; }
+    // Customer is optional - allows for daily summaries without specific customers
+    public int? CustomerId { get; set; }
 
     // Shipping Information
     [Required]
@@ -427,8 +427,8 @@ public class SalesOrderSummaryDto
 {
     public int Id { get; set; }
     public string OrderNumber { get; set; } = string.Empty;
-    public int CustomerId { get; set; }
-    public string CustomerName { get; set; } = string.Empty;
+    public int? CustomerId { get; set; }
+    public string? CustomerName { get; set; }
     public DateTime OrderDate { get; set; }
     public DateTime? RequiredDate { get; set; }
     public SalesOrderStatus Status { get; set; }

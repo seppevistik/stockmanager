@@ -16,6 +16,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Category> Categories { get; set; }
     public DbSet<StockMovement> StockMovements { get; set; }
     public DbSet<Company> Companies { get; set; }
+    public DbSet<Customer> Customers { get; set; }
     public DbSet<ProductSupplier> ProductSuppliers { get; set; }
     public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
     public DbSet<PurchaseOrderLine> PurchaseOrderLines { get; set; }
@@ -134,6 +135,36 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(e => new { e.BusinessId, e.Name });
             entity.HasIndex(e => e.IsSupplier);
             entity.HasIndex(e => e.IsCustomer);
+        });
+
+        // Customer configuration
+        builder.Entity<Customer>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.ContactPerson).HasMaxLength(100);
+            entity.Property(e => e.Email).HasMaxLength(100);
+            entity.Property(e => e.Phone).HasMaxLength(50);
+            entity.Property(e => e.Address).HasMaxLength(500);
+            entity.Property(e => e.City).HasMaxLength(100);
+            entity.Property(e => e.State).HasMaxLength(100);
+            entity.Property(e => e.Country).HasMaxLength(100);
+            entity.Property(e => e.PostalCode).HasMaxLength(20);
+            entity.Property(e => e.CompanyName).HasMaxLength(200);
+            entity.Property(e => e.TaxNumber).HasMaxLength(50);
+            entity.Property(e => e.Website).HasMaxLength(200);
+            entity.Property(e => e.CreditLimit).HasPrecision(18, 2);
+            entity.Property(e => e.PaymentMethod).HasMaxLength(50);
+
+            entity.HasOne(e => e.Business)
+                  .WithMany()
+                  .HasForeignKey(e => e.BusinessId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasQueryFilter(e => !e.IsDeleted);
+            entity.HasIndex(e => new { e.BusinessId, e.Name });
+            entity.HasIndex(e => e.Email);
+            entity.HasIndex(e => e.IsActive);
         });
 
         // ProductSupplier configuration (many-to-many junction table)
@@ -360,9 +391,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                   .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasOne(e => e.Customer)
-                  .WithMany()
+                  .WithMany(c => c.SalesOrders)
                   .HasForeignKey(e => e.CustomerId)
-                  .OnDelete(DeleteBehavior.Restrict);
+                  .OnDelete(DeleteBehavior.Restrict)
+                  .IsRequired(false);
 
             entity.HasOne(e => e.CreatedByUser)
                   .WithMany()

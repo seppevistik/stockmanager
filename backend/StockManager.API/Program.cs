@@ -126,6 +126,7 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<StockMovementService>();
 builder.Services.AddScoped<CompanyService>();
+builder.Services.AddScoped<CustomerService>();
 builder.Services.AddScoped<InventoryUpdateService>();
 builder.Services.AddScoped<PurchaseOrderService>();
 builder.Services.AddScoped<ReceiptService>();

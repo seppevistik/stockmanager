@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -15,9 +15,11 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatStepperModule } from '@angular/material/stepper';
+import { MatDividerModule } from '@angular/material/divider';
 import { Observable, startWith, map } from 'rxjs';
 import { SalesOrderService } from '../../../services/sales-order.service';
-import { CompanyService } from '../../../services/company.service';
+import { CustomerService } from '../../../services/customer.service';
 import { ProductService } from '../../../services/product.service';
 import {
   CreateSalesOrderRequest,
@@ -25,8 +27,20 @@ import {
   Priority,
   SalesOrder
 } from '../../../models/sales-order.model';
-import { Company } from '../../../models/company.model';
+import { Customer } from '../../../models/customer.model';
 import { Product } from '../../../models/product.model';
+
+// Custom validator for future dates
+function futureDateValidator(control: AbstractControl): ValidationErrors | null {
+  if (!control.value) return null;
+
+  const selectedDate = new Date(control.value);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  selectedDate.setHours(0, 0, 0, 0);
+
+  return selectedDate < today ? { pastDate: true } : null;
+}
 
 @Component({
   selector: 'app-sales-order-form',
@@ -47,19 +61,24 @@ import { Product } from '../../../models/product.model';
     MatSnackBarModule,
     MatTableModule,
     MatTooltipModule,
-    MatAutocompleteModule
+    MatAutocompleteModule,
+    MatStepperModule,
+    MatDividerModule
   ],
   templateUrl: './sales-order-form.component.html',
   styleUrl: './sales-order-form.component.scss'
 })
 export class SalesOrderFormComponent implements OnInit {
-  form!: FormGroup;
+  // Form groups for each step
+  customerDetailsForm!: FormGroup;
+  productsForm!: FormGroup;
+
   isEditMode = false;
   salesOrderId?: number;
   loading = false;
   submitting = false;
 
-  customers: Company[] = [];
+  customers: Customer[] = [];
   products: Product[] = [];
   filteredProducts: Observable<Product[]>[] = [];
 
@@ -77,7 +96,7 @@ export class SalesOrderFormComponent implements OnInit {
     private router: Router,
     private fb: FormBuilder,
     private salesOrderService: SalesOrderService,
-    private companyService: CompanyService,
+    private customerService: CustomerService,
     private productService: ProductService,
     private snackBar: MatSnackBar
   ) {}
@@ -98,14 +117,17 @@ export class SalesOrderFormComponent implements OnInit {
     }
 
     // Watch for changes to recalculate totals
-    this.form.valueChanges.subscribe(() => {
+    this.productsForm.valueChanges.subscribe(() => {
       this.calculateTotals();
     });
   }
 
   initializeForm(): void {
-    this.form = this.fb.group({
-      customerId: ['', Validators.required],
+    // Step 1: Customer Details
+    this.customerDetailsForm = this.fb.group({
+      customerId: [null],
+      customerReference: [''],
+      priority: [Priority.Normal, Validators.required],
 
       // Shipping Information
       shipToName: ['', Validators.required],
@@ -115,30 +137,30 @@ export class SalesOrderFormComponent implements OnInit {
       shipToPostalCode: ['', Validators.required],
       shipToCountry: ['USA', Validators.required],
       shipToPhone: [''],
+      shippingMethod: [''],
+
+      // Dates
+      requiredDate: [null, futureDateValidator],
+      promisedDate: [null, futureDateValidator],
+
+      // Notes
+      notes: [''],
+      internalNotes: ['']
+    });
+
+    // Step 2: Products
+    this.productsForm = this.fb.group({
+      lines: this.fb.array([]),
 
       // Financial
       taxRate: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
       shippingCost: [0, [Validators.required, Validators.min(0)]],
-      discountAmount: [0, [Validators.required, Validators.min(0)]],
-
-      // Priority & Dates
-      priority: [Priority.Normal, Validators.required],
-      requiredDate: [null],
-      promisedDate: [null],
-
-      // Additional Info
-      customerReference: [''],
-      shippingMethod: [''],
-      notes: [''],
-      internalNotes: [''],
-
-      // Order Lines
-      lines: this.fb.array([])
+      discountAmount: [0, [Validators.required, Validators.min(0)]]
     });
   }
 
   get lines(): FormArray {
-    return this.form.get('lines') as FormArray;
+    return this.productsForm.get('lines') as FormArray;
   }
 
   createLineFormGroup(): FormGroup {
@@ -196,6 +218,52 @@ export class SalesOrderFormComponent implements OnInit {
       productId: product.id,
       unitPrice: product.costPerUnit || 0
     });
+
+    // Show stock availability warning
+    const quantityOrdered = line.get('quantityOrdered')?.value || 1;
+    if (product.currentStock < quantityOrdered) {
+      this.snackBar.open(
+        `Warning: ${product.name} has only ${product.currentStock} units in stock. Ordered: ${quantityOrdered}`,
+        'Close',
+        { duration: 5000, panelClass: ['warning-snackbar'] }
+      );
+    } else if (product.currentStock - quantityOrdered < product.minimumStockLevel) {
+      this.snackBar.open(
+        `Warning: ${product.name} will be below minimum stock level (${product.minimumStockLevel}) after this order.`,
+        'Close',
+        { duration: 5000, panelClass: ['warning-snackbar'] }
+      );
+    }
+  }
+
+  getProductStock(productId: number): number {
+    const product = this.products.find(p => p.id === productId);
+    return product?.currentStock || 0;
+  }
+
+  isStockAvailable(index: number): boolean {
+    const line = this.lines.at(index);
+    const productId = line.get('productId')?.value;
+    const quantityOrdered = line.get('quantityOrdered')?.value || 0;
+    const product = this.products.find(p => p.id === productId);
+    return product ? product.currentStock >= quantityOrdered : true;
+  }
+
+  getStockWarning(index: number): string {
+    const line = this.lines.at(index);
+    const productId = line.get('productId')?.value;
+    const quantityOrdered = line.get('quantityOrdered')?.value || 0;
+    const product = this.products.find(p => p.id === productId);
+
+    if (!product || !productId) return '';
+
+    if (product.currentStock < quantityOrdered) {
+      return `Insufficient stock! Available: ${product.currentStock}`;
+    } else if (product.currentStock - quantityOrdered < product.minimumStockLevel) {
+      return `Below min. stock level after order (Min: ${product.minimumStockLevel})`;
+    } else {
+      return `In stock: ${product.currentStock} available`;
+    }
   }
 
   displayProduct(productId: number): string {
@@ -205,9 +273,9 @@ export class SalesOrderFormComponent implements OnInit {
   }
 
   loadCustomers(): void {
-    this.companyService.getAll().subscribe({
-      next: (companies) => {
-        this.customers = companies.filter(c => c.isCustomer);
+    this.customerService.getCustomers({ isActive: true, pageSize: 1000 }).subscribe({
+      next: (result) => {
+        this.customers = result.items;
       },
       error: (error) => {
         console.error('Error loading customers:', error);
@@ -245,8 +313,11 @@ export class SalesOrderFormComponent implements OnInit {
   }
 
   populateForm(order: SalesOrder): void {
-    this.form.patchValue({
+    // Populate customer details form
+    this.customerDetailsForm.patchValue({
       customerId: order.customerId,
+      customerReference: order.customerReference,
+      priority: order.priority,
       shipToName: order.shipToName,
       shipToAddress: order.shipToAddress,
       shipToCity: order.shipToCity,
@@ -254,16 +325,18 @@ export class SalesOrderFormComponent implements OnInit {
       shipToPostalCode: order.shipToPostalCode,
       shipToCountry: order.shipToCountry,
       shipToPhone: order.shipToPhone,
-      taxRate: order.taxRate,
-      shippingCost: order.shippingCost,
-      discountAmount: order.discountAmount,
-      priority: order.priority,
+      shippingMethod: order.shippingMethod,
       requiredDate: order.requiredDate ? new Date(order.requiredDate) : null,
       promisedDate: order.promisedDate ? new Date(order.promisedDate) : null,
-      customerReference: order.customerReference,
-      shippingMethod: order.shippingMethod,
       notes: order.notes,
       internalNotes: order.internalNotes
+    });
+
+    // Populate products form
+    this.productsForm.patchValue({
+      taxRate: order.taxRate,
+      shippingCost: order.shippingCost,
+      discountAmount: order.discountAmount
     });
 
     // Clear existing lines and add lines from order
@@ -285,11 +358,11 @@ export class SalesOrderFormComponent implements OnInit {
     const customer = this.customers.find(c => c.id === customerId);
     if (customer) {
       // Auto-fill shipping address from customer if available
-      this.form.patchValue({
+      this.customerDetailsForm.patchValue({
         shipToName: customer.name,
         shipToAddress: customer.address || '',
         shipToCity: customer.city || '',
-        shipToState: '',
+        shipToState: customer.state || '',
         shipToPostalCode: customer.postalCode || '',
         shipToCountry: customer.country || 'USA',
         shipToPhone: customer.phone || ''
@@ -316,21 +389,27 @@ export class SalesOrderFormComponent implements OnInit {
 
   getTaxAmount(): number {
     const subtotal = this.getSubTotal();
-    const taxRate = this.form.get('taxRate')?.value || 0;
+    const taxRate = this.productsForm.get('taxRate')?.value || 0;
     return subtotal * (taxRate / 100);
   }
 
   getTotal(): number {
     const subtotal = this.getSubTotal();
     const tax = this.getTaxAmount();
-    const shipping = this.form.get('shippingCost')?.value || 0;
-    const discount = this.form.get('discountAmount')?.value || 0;
+    const shipping = this.productsForm.get('shippingCost')?.value || 0;
+    const discount = this.productsForm.get('discountAmount')?.value || 0;
     return subtotal + tax + shipping - discount;
   }
 
   onSubmit(): void {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
+    if (this.customerDetailsForm.invalid || this.productsForm.invalid) {
+      this.customerDetailsForm.markAllAsTouched();
+      this.productsForm.markAllAsTouched();
+
+      // Log validation errors for debugging
+      console.log('Customer Details Form Errors:', this.customerDetailsForm.errors);
+      console.log('Products Form Errors:', this.productsForm.errors);
+
       this.snackBar.open('Please fill in all required fields', 'Close', { duration: 3000 });
       return;
     }
@@ -342,7 +421,13 @@ export class SalesOrderFormComponent implements OnInit {
 
     this.submitting = true;
 
-    const formValue = this.form.value;
+    // Combine both forms
+    const formValue = {
+      ...this.customerDetailsForm.value,
+      ...this.productsForm.value
+    };
+
+    console.log('Submitting order with data:', formValue);
 
     if (this.isEditMode && this.salesOrderId) {
       const request: UpdateSalesOrderRequest = {
@@ -360,10 +445,11 @@ export class SalesOrderFormComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error updating sales order:', error);
+          console.error('Error details:', error.error);
           this.snackBar.open(
-            error.error?.message || 'Error updating sales order',
+            error.error?.message || error.error?.title || 'Error updating sales order',
             'Close',
-            { duration: 3000 }
+            { duration: 5000 }
           );
           this.submitting = false;
         }
@@ -378,15 +464,67 @@ export class SalesOrderFormComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error creating sales order:', error);
-          this.snackBar.open(
-            error.error?.message || 'Error creating sales order',
-            'Close',
-            { duration: 3000 }
-          );
+          console.error('Error details:', error.error);
+
+          // Show detailed error message
+          let errorMessage = 'Error creating sales order';
+          if (error.error?.errors) {
+            const errorMessages = Object.values(error.error.errors).flat();
+            errorMessage = errorMessages.join(', ');
+          } else if (error.error?.message) {
+            errorMessage = error.error.message;
+          } else if (error.error?.title) {
+            errorMessage = error.error.title;
+          }
+
+          this.snackBar.open(errorMessage, 'Close', { duration: 5000 });
           this.submitting = false;
         }
       });
     }
+  }
+
+  // Helpers for overview step
+  getSelectedCustomer(): Customer | undefined {
+    const customerId = this.customerDetailsForm.get('customerId')?.value;
+    return this.customers.find(c => c.id === customerId);
+  }
+
+  getSelectedProduct(productId: number): Product | undefined {
+    return this.products.find(p => p.id === productId);
+  }
+
+  getPriorityLabel(): string {
+    const priorityValue = this.customerDetailsForm.get('priority')?.value;
+    return this.priorities.find(p => p.value === priorityValue)?.label || 'Normal';
+  }
+
+  getShipToName(): string {
+    return this.customerDetailsForm.get('shipToName')?.value || '';
+  }
+
+  getShipToAddress(): string {
+    return this.customerDetailsForm.get('shipToAddress')?.value || '';
+  }
+
+  getShipToCity(): string {
+    return this.customerDetailsForm.get('shipToCity')?.value || '';
+  }
+
+  getShipToState(): string {
+    return this.customerDetailsForm.get('shipToState')?.value || '';
+  }
+
+  getShipToPostalCode(): string {
+    return this.customerDetailsForm.get('shipToPostalCode')?.value || '';
+  }
+
+  getShipToCountry(): string {
+    return this.customerDetailsForm.get('shipToCountry')?.value || '';
+  }
+
+  getShipToPhone(): string {
+    return this.customerDetailsForm.get('shipToPhone')?.value || '';
   }
 
   onCancel(): void {

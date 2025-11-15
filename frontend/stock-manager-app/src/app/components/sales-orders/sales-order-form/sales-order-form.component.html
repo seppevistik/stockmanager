@@ -3,312 +3,472 @@
     <h1>{{ isEditMode ? 'Edit Sales Order' : 'New Sales Order' }}</h1>
   </div>
 
-  <form [formGroup]="form" (ngSubmit)="onSubmit()">
-    <!-- Customer Information -->
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>Customer Information</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <div class="form-grid">
-          <mat-form-field class="full-width">
-            <mat-label>Customer</mat-label>
-            <mat-select formControlName="customerId" (selectionChange)="onCustomerChange($event.value)" required>
-              <mat-option *ngFor="let customer of customers" [value]="customer.id">
-                {{ customer.name }}
-              </mat-option>
-            </mat-select>
-            <mat-error *ngIf="form.get('customerId')?.hasError('required')">
-              Customer is required
-            </mat-error>
-          </mat-form-field>
+  <mat-stepper [linear]="!isEditMode" #stepper>
+    <!-- Step 1: Customer Details -->
+    <mat-step [stepControl]="customerDetailsForm" label="Customer Details">
+      <form [formGroup]="customerDetailsForm">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>Customer Information</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="form-grid">
+              <mat-form-field class="full-width">
+                <mat-label>Customer (Optional)</mat-label>
+                <mat-select formControlName="customerId" (selectionChange)="onCustomerChange($event.value)">
+                  <mat-option [value]="null">
+                    None (Daily Summary)
+                  </mat-option>
+                  <mat-option *ngFor="let customer of customers" [value]="customer.id">
+                    {{ customer.name }}{{ customer.isCompany && customer.companyName ? ' - ' + customer.companyName : '' }}
+                  </mat-option>
+                </mat-select>
+                <mat-hint>Leave blank for daily summaries without specific customers</mat-hint>
+              </mat-form-field>
 
-          <mat-form-field>
-            <mat-label>Customer Reference</mat-label>
-            <input matInput formControlName="customerReference" placeholder="PO Number, etc.">
-          </mat-form-field>
+              <mat-form-field>
+                <mat-label>Customer Reference</mat-label>
+                <input matInput formControlName="customerReference" placeholder="PO Number, etc.">
+              </mat-form-field>
 
-          <mat-form-field>
-            <mat-label>Priority</mat-label>
-            <mat-select formControlName="priority" required>
-              <mat-option *ngFor="let priority of priorities" [value]="priority.value">
-                {{ priority.label }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
-      </mat-card-content>
-    </mat-card>
+              <mat-form-field>
+                <mat-label>Priority</mat-label>
+                <mat-select formControlName="priority" required>
+                  <mat-option *ngFor="let priority of priorities" [value]="priority.value">
+                    {{ priority.label }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </mat-card-content>
+        </mat-card>
 
-    <!-- Shipping Address -->
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>Shipping Address</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <div class="form-grid">
-          <mat-form-field class="full-width">
-            <mat-label>Name</mat-label>
-            <input matInput formControlName="shipToName" required>
-            <mat-error>Name is required</mat-error>
-          </mat-form-field>
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>Shipping Address</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="form-grid">
+              <mat-form-field class="full-width">
+                <mat-label>Name</mat-label>
+                <input matInput formControlName="shipToName" required>
+                <mat-error>Name is required</mat-error>
+              </mat-form-field>
 
-          <mat-form-field class="full-width">
-            <mat-label>Address</mat-label>
-            <input matInput formControlName="shipToAddress" required>
-            <mat-error>Address is required</mat-error>
-          </mat-form-field>
+              <mat-form-field class="full-width">
+                <mat-label>Address</mat-label>
+                <input matInput formControlName="shipToAddress" required>
+                <mat-error>Address is required</mat-error>
+              </mat-form-field>
 
-          <mat-form-field>
-            <mat-label>City</mat-label>
-            <input matInput formControlName="shipToCity" required>
-            <mat-error>City is required</mat-error>
-          </mat-form-field>
+              <mat-form-field>
+                <mat-label>City</mat-label>
+                <input matInput formControlName="shipToCity" required>
+                <mat-error>City is required</mat-error>
+              </mat-form-field>
 
-          <mat-form-field>
-            <mat-label>State</mat-label>
-            <input matInput formControlName="shipToState" required>
-            <mat-error>State is required</mat-error>
-          </mat-form-field>
+              <mat-form-field>
+                <mat-label>State</mat-label>
+                <input matInput formControlName="shipToState" required>
+                <mat-error>State is required</mat-error>
+              </mat-form-field>
 
-          <mat-form-field>
-            <mat-label>Postal Code</mat-label>
-            <input matInput formControlName="shipToPostalCode" required>
-            <mat-error>Postal code is required</mat-error>
-          </mat-form-field>
+              <mat-form-field>
+                <mat-label>Postal Code</mat-label>
+                <input matInput formControlName="shipToPostalCode" required>
+                <mat-error>Postal code is required</mat-error>
+              </mat-form-field>
 
-          <mat-form-field>
-            <mat-label>Country</mat-label>
-            <input matInput formControlName="shipToCountry" required>
-            <mat-error>Country is required</mat-error>
-          </mat-form-field>
+              <mat-form-field>
+                <mat-label>Country</mat-label>
+                <input matInput formControlName="shipToCountry" required>
+                <mat-error>Country is required</mat-error>
+              </mat-form-field>
 
-          <mat-form-field>
-            <mat-label>Phone</mat-label>
-            <input matInput formControlName="shipToPhone" type="tel">
-          </mat-form-field>
+              <mat-form-field>
+                <mat-label>Phone</mat-label>
+                <input matInput formControlName="shipToPhone" type="tel">
+              </mat-form-field>
 
-          <mat-form-field>
-            <mat-label>Shipping Method</mat-label>
-            <input matInput formControlName="shippingMethod" placeholder="UPS Ground, FedEx, etc.">
-          </mat-form-field>
-        </div>
-      </mat-card-content>
-    </mat-card>
+              <mat-form-field>
+                <mat-label>Shipping Method</mat-label>
+                <input matInput formControlName="shippingMethod" placeholder="UPS Ground, FedEx, etc.">
+              </mat-form-field>
+            </div>
+          </mat-card-content>
+        </mat-card>
 
-    <!-- Dates -->
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>Dates</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <div class="form-grid">
-          <mat-form-field>
-            <mat-label>Required Date</mat-label>
-            <input matInput [matDatepicker]="requiredPicker" formControlName="requiredDate">
-            <mat-datepicker-toggle matSuffix [for]="requiredPicker"></mat-datepicker-toggle>
-            <mat-datepicker #requiredPicker></mat-datepicker>
-          </mat-form-field>
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>Dates & Notes</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="form-grid">
+              <mat-form-field>
+                <mat-label>Required Date</mat-label>
+                <input matInput [matDatepicker]="requiredPicker" formControlName="requiredDate">
+                <mat-datepicker-toggle matSuffix [for]="requiredPicker"></mat-datepicker-toggle>
+                <mat-datepicker #requiredPicker></mat-datepicker>
+                <mat-error *ngIf="customerDetailsForm.get('requiredDate')?.hasError('pastDate')">
+                  Required date cannot be in the past
+                </mat-error>
+                <mat-hint>When the customer needs the order</mat-hint>
+              </mat-form-field>
 
-          <mat-form-field>
-            <mat-label>Promised Date</mat-label>
-            <input matInput [matDatepicker]="promisedPicker" formControlName="promisedDate">
-            <mat-datepicker-toggle matSuffix [for]="promisedPicker"></mat-datepicker-toggle>
-            <mat-datepicker #promisedPicker></mat-datepicker>
-          </mat-form-field>
-        </div>
-      </mat-card-content>
-    </mat-card>
+              <mat-form-field>
+                <mat-label>Promised Date</mat-label>
+                <input matInput [matDatepicker]="promisedPicker" formControlName="promisedDate">
+                <mat-datepicker-toggle matSuffix [for]="promisedPicker"></mat-datepicker-toggle>
+                <mat-datepicker #promisedPicker></mat-datepicker>
+                <mat-error *ngIf="customerDetailsForm.get('promisedDate')?.hasError('pastDate')">
+                  Promised date cannot be in the past
+                </mat-error>
+                <mat-hint>When you commit to deliver</mat-hint>
+              </mat-form-field>
 
-    <!-- Order Lines -->
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>Order Items</mat-card-title>
-        <button mat-mini-fab color="primary" type="button" (click)="addLine()" matTooltip="Add Line Item">
-          <mat-icon>add</mat-icon>
-        </button>
-      </mat-card-header>
-      <mat-card-content>
-        <div class="lines-table-container">
-          <table mat-table [dataSource]="lines.controls" class="lines-table">
-            <!-- Product Column -->
-            <ng-container matColumnDef="product">
-              <th mat-header-cell *matHeaderCellDef>Product *</th>
-              <td mat-cell *matCellDef="let line; let i = index">
-                <mat-form-field [formGroup]="line" class="product-field">
-                  <mat-label>Select Product</mat-label>
-                  <mat-select formControlName="productId" required>
-                    <mat-option *ngFor="let product of products" [value]="product.id"
-                                (onSelectionChange)="onProductSelected(i, product)">
-                      {{ product.sku }} - {{ product.name }}
-                    </mat-option>
-                  </mat-select>
-                  <mat-error>Required</mat-error>
-                </mat-form-field>
-              </td>
-            </ng-container>
+              <mat-form-field class="full-width">
+                <mat-label>Customer Notes</mat-label>
+                <textarea matInput formControlName="notes" rows="3"
+                          placeholder="Notes visible to customer"></textarea>
+              </mat-form-field>
 
-            <!-- Quantity Column -->
-            <ng-container matColumnDef="quantity">
-              <th mat-header-cell *matHeaderCellDef>Quantity *</th>
-              <td mat-cell *matCellDef="let line">
-                <mat-form-field [formGroup]="line" class="quantity-field">
-                  <input matInput formControlName="quantityOrdered" type="number" min="0.01" step="1" required>
-                  <mat-error>Required</mat-error>
-                </mat-form-field>
-              </td>
-            </ng-container>
+              <mat-form-field class="full-width">
+                <mat-label>Internal Notes</mat-label>
+                <textarea matInput formControlName="internalNotes" rows="3"
+                          placeholder="Internal notes (not visible to customer)"></textarea>
+              </mat-form-field>
+            </div>
+          </mat-card-content>
+        </mat-card>
 
-            <!-- Unit Price Column -->
-            <ng-container matColumnDef="unitPrice">
-              <th mat-header-cell *matHeaderCellDef>Unit Price *</th>
-              <td mat-cell *matCellDef="let line">
-                <mat-form-field [formGroup]="line" class="price-field">
-                  <span matPrefix>$</span>
-                  <input matInput formControlName="unitPrice" type="number" min="0" step="0.01" required>
-                  <mat-error>Required</mat-error>
-                </mat-form-field>
-              </td>
-            </ng-container>
-
-            <!-- Discount Column -->
-            <ng-container matColumnDef="discount">
-              <th mat-header-cell *matHeaderCellDef>Discount %</th>
-              <td mat-cell *matCellDef="let line">
-                <mat-form-field [formGroup]="line" class="discount-field">
-                  <input matInput formControlName="discountPercent" type="number" min="0" max="100" step="1">
-                  <span matSuffix>%</span>
-                </mat-form-field>
-              </td>
-            </ng-container>
-
-            <!-- Total Column -->
-            <ng-container matColumnDef="total">
-              <th mat-header-cell *matHeaderCellDef>Line Total</th>
-              <td mat-cell *matCellDef="let line; let i = index" class="total-cell">
-                {{ formatCurrency(calculateLineTotal(i)) }}
-              </td>
-            </ng-container>
-
-            <!-- Actions Column -->
-            <ng-container matColumnDef="actions">
-              <th mat-header-cell *matHeaderCellDef></th>
-              <td mat-cell *matCellDef="let line; let i = index">
-                <button mat-icon-button color="warn" type="button" (click)="removeLine(i)"
-                        [disabled]="lines.length === 1" matTooltip="Remove Line">
-                  <mat-icon>delete</mat-icon>
-                </button>
-              </td>
-            </ng-container>
-
-            <tr mat-header-row *matHeaderRowDef="lineDisplayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: lineDisplayedColumns;"></tr>
-          </table>
-        </div>
-
-        <div class="add-line-button">
-          <button mat-stroked-button type="button" (click)="addLine()">
-            <mat-icon>add</mat-icon> Add Another Item
+        <div class="step-actions">
+          <button mat-button (click)="onCancel()" type="button">Cancel</button>
+          <button mat-raised-button color="primary" matStepperNext type="button">
+            Next: Add Products
+            <mat-icon>arrow_forward</mat-icon>
           </button>
         </div>
-      </mat-card-content>
-    </mat-card>
+      </form>
+    </mat-step>
 
-    <!-- Financial Details -->
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>Financial Details</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <div class="financial-grid">
-          <div class="form-inputs">
-            <mat-form-field>
-              <mat-label>Tax Rate</mat-label>
-              <input matInput formControlName="taxRate" type="number" min="0" max="100" step="0.01" required>
-              <span matSuffix>%</span>
-              <mat-error>Required</mat-error>
-            </mat-form-field>
+    <!-- Step 2: Products -->
+    <mat-step [stepControl]="productsForm" label="Products">
+      <form [formGroup]="productsForm">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>Order Items</mat-card-title>
+            <button mat-mini-fab color="primary" type="button" (click)="addLine()" matTooltip="Add Line Item">
+              <mat-icon>add</mat-icon>
+            </button>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="lines-table-container">
+              <table mat-table [dataSource]="lines.controls" class="lines-table">
+                <!-- Product Column -->
+                <ng-container matColumnDef="product">
+                  <th mat-header-cell *matHeaderCellDef>Product *</th>
+                  <td mat-cell *matCellDef="let line; let i = index">
+                    <mat-form-field [formGroup]="line" class="product-field">
+                      <mat-label>Select Product</mat-label>
+                      <mat-select formControlName="productId" required>
+                        <mat-option *ngFor="let product of products" [value]="product.id"
+                                    (onSelectionChange)="onProductSelected(i, product)">
+                          {{ product.sku }} - {{ product.name }}
+                        </mat-option>
+                      </mat-select>
+                      <mat-error>Required</mat-error>
+                    </mat-form-field>
+                  </td>
+                </ng-container>
 
-            <mat-form-field>
-              <mat-label>Shipping Cost</mat-label>
-              <span matPrefix>$</span>
-              <input matInput formControlName="shippingCost" type="number" min="0" step="0.01" required>
-              <mat-error>Required</mat-error>
-            </mat-form-field>
+                <!-- Quantity Column -->
+                <ng-container matColumnDef="quantity">
+                  <th mat-header-cell *matHeaderCellDef>Quantity *</th>
+                  <td mat-cell *matCellDef="let line; let i = index">
+                    <mat-form-field [formGroup]="line" class="quantity-field">
+                      <input matInput formControlName="quantityOrdered" type="number" min="0.01" step="1" required>
+                      <mat-error>Required</mat-error>
+                      <mat-hint *ngIf="line.value.productId" [style.color]="!isStockAvailable(i) ? 'red' : 'inherit'">
+                        {{ getStockWarning(i) }}
+                      </mat-hint>
+                    </mat-form-field>
+                  </td>
+                </ng-container>
 
-            <mat-form-field>
-              <mat-label>Discount Amount</mat-label>
-              <span matPrefix>$</span>
-              <input matInput formControlName="discountAmount" type="number" min="0" step="0.01" required>
-              <mat-error>Required</mat-error>
-            </mat-form-field>
+                <!-- Unit Price Column -->
+                <ng-container matColumnDef="unitPrice">
+                  <th mat-header-cell *matHeaderCellDef>Unit Price *</th>
+                  <td mat-cell *matCellDef="let line">
+                    <mat-form-field [formGroup]="line" class="price-field">
+                      <span matPrefix>$</span>
+                      <input matInput formControlName="unitPrice" type="number" min="0" step="0.01" required>
+                      <mat-error>Required</mat-error>
+                    </mat-form-field>
+                  </td>
+                </ng-container>
+
+                <!-- Discount Column -->
+                <ng-container matColumnDef="discount">
+                  <th mat-header-cell *matHeaderCellDef>Discount %</th>
+                  <td mat-cell *matCellDef="let line">
+                    <mat-form-field [formGroup]="line" class="discount-field">
+                      <input matInput formControlName="discountPercent" type="number" min="0" max="100" step="1">
+                      <span matSuffix>%</span>
+                    </mat-form-field>
+                  </td>
+                </ng-container>
+
+                <!-- Total Column -->
+                <ng-container matColumnDef="total">
+                  <th mat-header-cell *matHeaderCellDef>Line Total</th>
+                  <td mat-cell *matCellDef="let line; let i = index" class="total-cell">
+                    {{ formatCurrency(calculateLineTotal(i)) }}
+                  </td>
+                </ng-container>
+
+                <!-- Actions Column -->
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef></th>
+                  <td mat-cell *matCellDef="let line; let i = index">
+                    <button mat-icon-button color="warn" type="button" (click)="removeLine(i)"
+                            [disabled]="lines.length === 1" matTooltip="Remove Line">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="lineDisplayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: lineDisplayedColumns;"></tr>
+              </table>
+
+              <div class="no-lines" *ngIf="lines.length === 0">
+                <p>No items added yet. Click the + button to add products.</p>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>Financial Details</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="form-grid">
+              <mat-form-field>
+                <mat-label>Tax Rate (%)</mat-label>
+                <input matInput formControlName="taxRate" type="number" min="0" max="100" step="0.01" required>
+                <span matSuffix>%</span>
+                <mat-error>Required (0-100)</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Shipping Cost</mat-label>
+                <span matPrefix>$</span>
+                <input matInput formControlName="shippingCost" type="number" min="0" step="0.01" required>
+                <mat-error>Required</mat-error>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Discount Amount</mat-label>
+                <span matPrefix>$</span>
+                <input matInput formControlName="discountAmount" type="number" min="0" step="0.01" required>
+                <mat-error>Required</mat-error>
+              </mat-form-field>
+            </div>
+
+            <div class="totals-summary">
+              <div class="summary-row">
+                <span class="label">Subtotal:</span>
+                <span class="value">{{ formatCurrency(getSubTotal()) }}</span>
+              </div>
+              <div class="summary-row">
+                <span class="label">Tax:</span>
+                <span class="value">{{ formatCurrency(getTaxAmount()) }}</span>
+              </div>
+              <div class="summary-row">
+                <span class="label">Shipping:</span>
+                <span class="value">{{ formatCurrency(productsForm.get('shippingCost')?.value || 0) }}</span>
+              </div>
+              <div class="summary-row" *ngIf="(productsForm.get('discountAmount')?.value || 0) > 0">
+                <span class="label">Discount:</span>
+                <span class="value discount">-{{ formatCurrency(productsForm.get('discountAmount')?.value || 0) }}</span>
+              </div>
+              <mat-divider></mat-divider>
+              <div class="summary-row total">
+                <span class="label">Total:</span>
+                <span class="value">{{ formatCurrency(getTotal()) }}</span>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <div class="step-actions">
+          <button mat-button matStepperPrevious type="button">
+            <mat-icon>arrow_back</mat-icon>
+            Back
+          </button>
+          <button mat-raised-button color="primary" matStepperNext type="button"
+                  [disabled]="lines.length === 0">
+            Next: Review Order
+            <mat-icon>arrow_forward</mat-icon>
+          </button>
+        </div>
+      </form>
+    </mat-step>
+
+    <!-- Step 3: Overview & Finish -->
+    <mat-step label="Review & Finish">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>Order Summary</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <!-- Customer Info Summary -->
+          <div class="summary-section">
+            <h3>
+              <mat-icon>person</mat-icon>
+              Customer & Shipping
+            </h3>
+            <div class="summary-grid">
+              <div class="summary-item">
+                <span class="label">Customer:</span>
+                <span class="value">{{ getSelectedCustomer()?.name || 'Daily Summary (No Customer)' }}</span>
+              </div>
+              <div class="summary-item" *ngIf="customerDetailsForm.get('customerReference')?.value">
+                <span class="label">Reference:</span>
+                <span class="value">{{ customerDetailsForm.get('customerReference')?.value }}</span>
+              </div>
+              <div class="summary-item">
+                <span class="label">Priority:</span>
+                <span class="value">{{ getPriorityLabel() }}</span>
+              </div>
+              <div class="summary-item full-width">
+                <span class="label">Ship To:</span>
+                <span class="value">
+                  {{ getShipToName() }}<br>
+                  {{ getShipToAddress() }}<br>
+                  {{ getShipToCity() }}, {{ getShipToState() }} {{ getShipToPostalCode() }}<br>
+                  {{ getShipToCountry() }}
+                  <span *ngIf="getShipToPhone()"><br>{{ getShipToPhone() }}</span>
+                </span>
+              </div>
+              <div class="summary-item" *ngIf="customerDetailsForm.get('shippingMethod')?.value">
+                <span class="label">Shipping Method:</span>
+                <span class="value">{{ customerDetailsForm.get('shippingMethod')?.value }}</span>
+              </div>
+              <div class="summary-item" *ngIf="customerDetailsForm.get('requiredDate')?.value">
+                <span class="label">Required Date:</span>
+                <span class="value">{{ customerDetailsForm.get('requiredDate')?.value | date }}</span>
+              </div>
+              <div class="summary-item" *ngIf="customerDetailsForm.get('promisedDate')?.value">
+                <span class="label">Promised Date:</span>
+                <span class="value">{{ customerDetailsForm.get('promisedDate')?.value | date }}</span>
+              </div>
+            </div>
           </div>
 
-          <div class="totals-summary">
-            <div class="summary-row">
-              <span class="label">Subtotal:</span>
-              <span class="value">{{ formatCurrency(getSubTotal()) }}</span>
-            </div>
-            <div class="summary-row" *ngIf="form.get('discountAmount')?.value > 0">
-              <span class="label">Discount:</span>
-              <span class="value discount">-{{ formatCurrency(form.get('discountAmount')?.value) }}</span>
-            </div>
-            <div class="summary-row">
-              <span class="label">Tax:</span>
-              <span class="value">{{ formatCurrency(getTaxAmount()) }}</span>
-            </div>
-            <div class="summary-row" *ngIf="form.get('shippingCost')?.value > 0">
-              <span class="label">Shipping:</span>
-              <span class="value">{{ formatCurrency(form.get('shippingCost')?.value) }}</span>
-            </div>
-            <div class="summary-divider"></div>
-            <div class="summary-row total">
-              <span class="label">Total:</span>
-              <span class="value">{{ formatCurrency(getTotal()) }}</span>
+          <mat-divider></mat-divider>
+
+          <!-- Products Summary -->
+          <div class="summary-section">
+            <h3>
+              <mat-icon>shopping_cart</mat-icon>
+              Order Items ({{ lines.length }})
+            </h3>
+            <table class="summary-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Quantity</th>
+                  <th>Unit Price</th>
+                  <th>Discount</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let line of lines.controls; let i = index">
+                  <td>
+                    <div class="product-info">
+                      <strong>{{ getSelectedProduct(line.value.productId)?.sku }}</strong>
+                      <div class="product-name">{{ getSelectedProduct(line.value.productId)?.name }}</div>
+                    </div>
+                  </td>
+                  <td>{{ line.value.quantityOrdered }}</td>
+                  <td>{{ formatCurrency(line.value.unitPrice) }}</td>
+                  <td>{{ line.value.discountPercent || 0 }}%</td>
+                  <td>{{ formatCurrency(calculateLineTotal(i)) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <mat-divider></mat-divider>
+
+          <!-- Financial Summary -->
+          <div class="summary-section">
+            <h3>
+              <mat-icon>account_balance</mat-icon>
+              Financial Summary
+            </h3>
+            <div class="financial-summary">
+              <div class="summary-row">
+                <span class="label">Subtotal:</span>
+                <span class="value">{{ formatCurrency(getSubTotal()) }}</span>
+              </div>
+              <div class="summary-row">
+                <span class="label">Tax ({{ productsForm.get('taxRate')?.value }}%):</span>
+                <span class="value">{{ formatCurrency(getTaxAmount()) }}</span>
+              </div>
+              <div class="summary-row">
+                <span class="label">Shipping:</span>
+                <span class="value">{{ formatCurrency(productsForm.get('shippingCost')?.value || 0) }}</span>
+              </div>
+              <div class="summary-row" *ngIf="(productsForm.get('discountAmount')?.value || 0) > 0">
+                <span class="label">Discount:</span>
+                <span class="value discount">-{{ formatCurrency(productsForm.get('discountAmount')?.value || 0) }}</span>
+              </div>
+              <mat-divider></mat-divider>
+              <div class="summary-row total">
+                <span class="label">Total Amount:</span>
+                <span class="value">{{ formatCurrency(getTotal()) }}</span>
+              </div>
             </div>
           </div>
-        </div>
-      </mat-card-content>
-    </mat-card>
 
-    <!-- Notes -->
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>Notes</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <div class="form-grid">
-          <mat-form-field class="full-width">
-            <mat-label>Customer Notes</mat-label>
-            <textarea matInput formControlName="notes" rows="3"
-                      placeholder="Notes visible to customer"></textarea>
-          </mat-form-field>
+          <!-- Notes Summary -->
+          <div class="summary-section" *ngIf="customerDetailsForm.get('notes')?.value || customerDetailsForm.get('internalNotes')?.value">
+            <h3>
+              <mat-icon>note</mat-icon>
+              Notes
+            </h3>
+            <div *ngIf="customerDetailsForm.get('notes')?.value">
+              <strong>Customer Notes:</strong>
+              <p>{{ customerDetailsForm.get('notes')?.value }}</p>
+            </div>
+            <div *ngIf="customerDetailsForm.get('internalNotes')?.value">
+              <strong>Internal Notes:</strong>
+              <p>{{ customerDetailsForm.get('internalNotes')?.value }}</p>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
 
-          <mat-form-field class="full-width">
-            <mat-label>Internal Notes</mat-label>
-            <textarea matInput formControlName="internalNotes" rows="3"
-                      placeholder="Internal notes (not visible to customer)"></textarea>
-          </mat-form-field>
-        </div>
-      </mat-card-content>
-    </mat-card>
-
-    <!-- Form Actions -->
-    <div class="form-actions">
-      <button mat-button type="button" (click)="onCancel()" [disabled]="submitting">
-        Cancel
-      </button>
-      <button mat-raised-button color="primary" type="submit" [disabled]="submitting || form.invalid">
-        <mat-icon *ngIf="!submitting">save</mat-icon>
-        <mat-spinner *ngIf="submitting" diameter="20"></mat-spinner>
-        {{ isEditMode ? 'Update Order' : 'Create Order' }}
-      </button>
-    </div>
-  </form>
+      <div class="step-actions">
+        <button mat-button matStepperPrevious type="button" [disabled]="submitting">
+          <mat-icon>arrow_back</mat-icon>
+          Back
+        </button>
+        <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="submitting">
+          <mat-icon>{{ submitting ? 'hourglass_empty' : 'check' }}</mat-icon>
+          {{ submitting ? 'Creating Order...' : (isEditMode ? 'Update Order' : 'Create Order') }}
+        </button>
+      </div>
+    </mat-step>
+  </mat-stepper>
 </div>
 
 <!-- Loading State -->
 <div class="loading-container" *ngIf="loading">
   <mat-spinner></mat-spinner>
-  <p>Loading order...</p>
+  <p>Loading...</p>
 </div>

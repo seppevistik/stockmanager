@@ -8,7 +8,7 @@ namespace StockManager.API.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/sales-orders")]
 public class SalesOrdersController : ControllerBase
 {
     private readonly SalesOrderService _salesOrderService;

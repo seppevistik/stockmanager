@@ -14,11 +14,16 @@ public class SalesOrderService
 {
     private readonly ApplicationDbContext _context;
     private readonly ILogger<SalesOrderService> _logger;
+    private readonly StockMovementService _stockMovementService;
 
-    public SalesOrderService(ApplicationDbContext context, ILogger<SalesOrderService> logger)
+    public SalesOrderService(
+        ApplicationDbContext context,
+        ILogger<SalesOrderService> logger,
+        StockMovementService stockMovementService)
     {
         _context = context;
         _logger = logger;
+        _stockMovementService = stockMovementService;
     }
 
     // List and Search
@@ -38,7 +43,7 @@ public class SalesOrderService
             var searchTerm = query.SearchTerm.ToLower();
             queryable = queryable.Where(so =>
                 so.OrderNumber.ToLower().Contains(searchTerm) ||
-                so.Customer.Name.ToLower().Contains(searchTerm) ||
+                (so.Customer != null && so.Customer.Name.ToLower().Contains(searchTerm)) ||
                 so.CustomerReference!.ToLower().Contains(searchTerm));
         }
 
@@ -92,7 +97,7 @@ public class SalesOrderService
                 Id = so.Id,
                 OrderNumber = so.OrderNumber,
                 CustomerId = so.CustomerId,
-                CustomerName = so.Customer.Name,
+                CustomerName = so.Customer != null ? so.Customer.Name : null,
                 OrderDate = so.OrderDate,
                 RequiredDate = so.RequiredDate,
                 Status = so.Status,
@@ -137,12 +142,15 @@ public class SalesOrderService
         string userId,
         CreateSalesOrderRequest request)
     {
-        // Validate customer exists and belongs to business
-        var customer = await _context.Companies
-            .FirstOrDefaultAsync(c => c.Id == request.CustomerId && c.BusinessId == businessId);
+        // Validate customer exists and belongs to business (if provided)
+        if (request.CustomerId.HasValue)
+        {
+            var customer = await _context.Customers
+                .FirstOrDefaultAsync(c => c.Id == request.CustomerId.Value && c.BusinessId == businessId);
 
-        if (customer == null)
-            throw new InvalidOperationException("Customer not found");
+            if (customer == null)
+                throw new InvalidOperationException("Customer not found");
+        }
 
         // Validate products exist and belong to business
         var productIds = request.Lines.Select(l => l.ProductId).Distinct().ToList();
@@ -250,12 +258,15 @@ public class SalesOrderService
         if (salesOrder.Status != SalesOrderStatus.Draft)
             throw new InvalidOperationException("Only draft orders can be updated");
 
-        // Validate customer exists and belongs to business
-        var customer = await _context.Companies
-            .FirstOrDefaultAsync(c => c.Id == request.CustomerId && c.BusinessId == businessId);
+        // Validate customer exists and belongs to business (if provided)
+        if (request.CustomerId.HasValue)
+        {
+            var customer = await _context.Customers
+                .FirstOrDefaultAsync(c => c.Id == request.CustomerId.Value && c.BusinessId == businessId);
 
-        if (customer == null)
-            throw new InvalidOperationException("Customer not found");
+            if (customer == null)
+                throw new InvalidOperationException("Customer not found");
+        }
 
         // Validate products exist and belong to business
         var productIds = request.Lines.Select(l => l.ProductId).Distinct().ToList();
@@ -749,6 +760,41 @@ public class SalesOrderService
         if (salesOrder.Status != SalesOrderStatus.Packed)
             throw new InvalidOperationException("Order must be packed before shipping");
 
+        // Create stock movements for each line before updating order status
+        var stockMovementErrors = new List<string>();
+        foreach (var line in salesOrder.Lines)
+        {
+            if (line.QuantityPicked > 0)
+            {
+                var createMovementDto = new CreateStockMovementDto
+                {
+                    ProductId = line.ProductId,
+                    MovementType = StockMovementType.StockOut,
+                    Quantity = line.QuantityPicked,
+                    Reason = $"Sales Order {salesOrder.OrderNumber}",
+                    Notes = $"Shipped to {salesOrder.ShipToName ?? "customer"}",
+                    FromLocation = line.Location
+                };
+
+                var (success, error, _) = await _stockMovementService.CreateMovementAsync(
+                    createMovementDto,
+                    businessId,
+                    userId);
+
+                if (!success)
+                {
+                    stockMovementErrors.Add($"Product {line.ProductSku}: {error}");
+                }
+            }
+        }
+
+        // If there were any stock movement errors, throw an exception
+        if (stockMovementErrors.Any())
+        {
+            throw new InvalidOperationException(
+                $"Failed to create stock movements: {string.Join(", ", stockMovementErrors)}");
+        }
+
         // Update all lines to Shipped status
         foreach (var line in salesOrder.Lines)
         {
@@ -774,8 +820,8 @@ public class SalesOrderService
         await _context.SaveChangesAsync();
 
         _logger.LogInformation(
-            "Sales order {OrderNumber} shipped by user {UserId}. Carrier: {Carrier}, Tracking: {Tracking}",
-            salesOrder.OrderNumber, userId, request.Carrier, request.TrackingNumber);
+            "Sales order {OrderNumber} shipped by user {UserId}. Carrier: {Carrier}, Tracking: {Tracking}. Stock movements created for {LineCount} lines.",
+            salesOrder.OrderNumber, userId, request.Carrier, request.TrackingNumber, salesOrder.Lines.Count);
 
         return (await GetSalesOrderByIdAsync(businessId, id))!;
     }
@@ -900,8 +946,8 @@ public class SalesOrderService
                 ? queryable.OrderByDescending(so => so.OrderNumber)
                 : queryable.OrderBy(so => so.OrderNumber),
             "customer" => isDescending
-                ? queryable.OrderByDescending(so => so.Customer.Name)
-                : queryable.OrderBy(so => so.Customer.Name),
+                ? queryable.OrderByDescending(so => so.Customer != null ? so.Customer.Name : "")
+                : queryable.OrderBy(so => so.Customer != null ? so.Customer.Name : ""),
             "status" => isDescending
                 ? queryable.OrderByDescending(so => so.Status)
                 : queryable.OrderBy(so => so.Status),
@@ -925,8 +971,8 @@ public class SalesOrderService
             OrderNumber = salesOrder.OrderNumber,
             BusinessId = salesOrder.BusinessId,
             CustomerId = salesOrder.CustomerId,
-            CustomerName = salesOrder.Customer.Name,
-            CustomerEmail = salesOrder.Customer.Email ?? string.Empty,
+            CustomerName = salesOrder.Customer?.Name,
+            CustomerEmail = salesOrder.Customer?.Email,
             ShipToName = salesOrder.ShipToName,
             ShipToAddress = salesOrder.ShipToAddress,
             ShipToCity = salesOrder.ShipToCity,
