@@ -107,6 +107,7 @@ export interface PickedLineResult {
     table {
       width: 100%;
       border-collapse: collapse;
+      table-layout: fixed;
     }
 
     th, td {
@@ -119,6 +120,18 @@ export interface PickedLineResult {
       font-weight: 500;
       background-color: rgba(0, 0, 0, 0.04);
       font-size: 0.9em;
+    }
+
+    th:nth-child(1), td:nth-child(1) {
+      width: 50%;
+    }
+
+    th:nth-child(2), td:nth-child(2) {
+      width: 15%;
+    }
+
+    th:nth-child(3), td:nth-child(3) {
+      width: 35%;
     }
 
     .text-center {
