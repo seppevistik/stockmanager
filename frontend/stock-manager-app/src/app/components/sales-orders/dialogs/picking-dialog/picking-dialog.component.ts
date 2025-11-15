@@ -105,14 +105,16 @@ export interface PickedLineResult {
   `,
   styles: [`
     mat-dialog-content {
-      min-width: 800px;
+      min-width: 1000px;
+      max-width: 1200px;
       max-height: 600px;
       padding: 20px 24px;
     }
 
     p {
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       color: rgba(0, 0, 0, 0.6);
+      font-size: 0.9em;
     }
 
     .picking-table {
@@ -123,10 +125,11 @@ export interface PickedLineResult {
     table {
       width: 100%;
       border-collapse: collapse;
+      table-layout: fixed;
     }
 
     th, td {
-      padding: 8px;
+      padding: 8px 12px;
       text-align: left;
       border-bottom: 1px solid rgba(0, 0, 0, 0.12);
     }
@@ -134,28 +137,59 @@ export interface PickedLineResult {
     th {
       font-weight: 500;
       background-color: rgba(0, 0, 0, 0.04);
+      font-size: 0.9em;
+      white-space: nowrap;
     }
+
+    th:nth-child(1) { width: 30%; }
+    th:nth-child(2) { width: 10%; }
+    th:nth-child(3) { width: 15%; }
+    th:nth-child(4) { width: 20%; }
+    th:nth-child(5) { width: 25%; }
 
     .product-info {
       display: flex;
       flex-direction: column;
     }
 
+    .product-info strong {
+      font-size: 0.9em;
+    }
+
     .product-name {
-      font-size: 0.85em;
+      font-size: 0.8em;
       color: rgba(0, 0, 0, 0.6);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .qty-cell {
       text-align: center;
+      font-size: 0.9em;
     }
 
     .compact-field {
       margin-bottom: -1.25em;
+      font-size: 0.9em;
+    }
+
+    .compact-field ::ng-deep .mat-mdc-text-field-wrapper {
+      padding: 0 !important;
+    }
+
+    .compact-field ::ng-deep .mat-mdc-form-field-infix {
+      min-height: 40px !important;
+      padding-top: 8px !important;
+      padding-bottom: 8px !important;
     }
 
     .compact-field ::ng-deep .mat-mdc-form-field-subscript-wrapper {
       display: none;
+    }
+
+    .compact-field ::ng-deep input {
+      font-size: 0.9em;
     }
 
     .summary {
