@@ -53,10 +53,10 @@
 
       @if (currentUser) {
         <!-- Business Selector -->
-        @if (currentUser.businessId && userBusinesses.length > 1) {
+        @if (userBusinesses.length > 0) {
           <button mat-button [matMenuTriggerFor]="businessMenu" class="business-selector">
             <mat-icon>business</mat-icon>
-            <span>{{ currentUser.businessName }}</span>
+            <span>{{ currentUser.businessName || 'Select Business' }}</span>
             <mat-icon>arrow_drop_down</mat-icon>
           </button>
         }

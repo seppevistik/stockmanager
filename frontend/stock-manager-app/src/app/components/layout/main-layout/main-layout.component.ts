@@ -103,7 +103,7 @@ export class MainLayoutComponent implements OnInit {
   ngOnInit(): void {
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
-      if (user && user.businessId) {
+      if (user) {
         this.loadUserBusinesses();
       }
     });
