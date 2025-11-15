@@ -22,7 +22,8 @@ namespace StockManager.Data.Migrations
                     Role = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
                 {
@@ -54,7 +55,7 @@ namespace StockManager.Data.Migrations
 
             // Migrate existing user-business relationships to UserBusinesses table
             migrationBuilder.Sql(@"
-                INSERT INTO UserBusinesses (UserId, BusinessId, Role, IsActive, CreatedAt, UpdatedAt)
+                INSERT INTO UserBusinesses (UserId, BusinessId, Role, IsActive, CreatedAt, UpdatedAt, IsDeleted)
                 SELECT Id, BusinessId,
                     CASE Role
                         WHEN 0 THEN 'Admin'
@@ -65,7 +66,8 @@ namespace StockManager.Data.Migrations
                     END,
                     1,
                     GETUTCDATE(),
-                    GETUTCDATE()
+                    GETUTCDATE(),
+                    0
                 FROM AspNetUsers
                 WHERE BusinessId IS NOT NULL
             ");
