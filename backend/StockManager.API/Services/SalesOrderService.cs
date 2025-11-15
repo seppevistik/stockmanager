@@ -14,11 +14,16 @@ public class SalesOrderService
 {
     private readonly ApplicationDbContext _context;
     private readonly ILogger<SalesOrderService> _logger;
+    private readonly StockMovementService _stockMovementService;
 
-    public SalesOrderService(ApplicationDbContext context, ILogger<SalesOrderService> logger)
+    public SalesOrderService(
+        ApplicationDbContext context,
+        ILogger<SalesOrderService> logger,
+        StockMovementService stockMovementService)
     {
         _context = context;
         _logger = logger;
+        _stockMovementService = stockMovementService;
     }
 
     // List and Search
@@ -755,6 +760,41 @@ public class SalesOrderService
         if (salesOrder.Status != SalesOrderStatus.Packed)
             throw new InvalidOperationException("Order must be packed before shipping");
 
+        // Create stock movements for each line before updating order status
+        var stockMovementErrors = new List<string>();
+        foreach (var line in salesOrder.Lines)
+        {
+            if (line.QuantityPicked > 0)
+            {
+                var createMovementDto = new CreateStockMovementDto
+                {
+                    ProductId = line.ProductId,
+                    MovementType = StockMovementType.StockOut,
+                    Quantity = line.QuantityPicked,
+                    Reason = $"Sales Order {salesOrder.OrderNumber}",
+                    Notes = $"Shipped to {salesOrder.ShipToName ?? "customer"}",
+                    FromLocation = line.Location
+                };
+
+                var (success, error, _) = await _stockMovementService.CreateMovementAsync(
+                    createMovementDto,
+                    businessId,
+                    userId);
+
+                if (!success)
+                {
+                    stockMovementErrors.Add($"Product {line.ProductSku}: {error}");
+                }
+            }
+        }
+
+        // If there were any stock movement errors, throw an exception
+        if (stockMovementErrors.Any())
+        {
+            throw new InvalidOperationException(
+                $"Failed to create stock movements: {string.Join(", ", stockMovementErrors)}");
+        }
+
         // Update all lines to Shipped status
         foreach (var line in salesOrder.Lines)
         {
@@ -780,8 +820,8 @@ public class SalesOrderService
         await _context.SaveChangesAsync();
 
         _logger.LogInformation(
-            "Sales order {OrderNumber} shipped by user {UserId}. Carrier: {Carrier}, Tracking: {Tracking}",
-            salesOrder.OrderNumber, userId, request.Carrier, request.TrackingNumber);
+            "Sales order {OrderNumber} shipped by user {UserId}. Carrier: {Carrier}, Tracking: {Tracking}. Stock movements created for {LineCount} lines.",
+            salesOrder.OrderNumber, userId, request.Carrier, request.TrackingNumber, salesOrder.Lines.Count);
 
         return (await GetSalesOrderByIdAsync(businessId, id))!;
     }
