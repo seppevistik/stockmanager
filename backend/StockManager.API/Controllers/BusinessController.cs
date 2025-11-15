@@ -133,7 +133,7 @@ public class BusinessController : ControllerBase
             return StatusCode(500, new { message = "Failed to retrieve updated business information" });
 
         // Generate new JWT token with new business context
-        var token = GenerateJwtToken(user, business.Name, userBusiness.Role.ToString(), out DateTime expiresAt);
+        var token = GenerateJwtToken(user, business.Id, business.Name, userBusiness.Role.ToString(), out DateTime expiresAt);
 
         // Get all user's businesses
         var businesses = await _businessService.GetUserBusinessesAsync(userId);
@@ -156,7 +156,7 @@ public class BusinessController : ControllerBase
         return Ok(response);
     }
 
-    private string GenerateJwtToken(ApplicationUser user, string businessName, string role, out DateTime expiresAt)
+    private string GenerateJwtToken(ApplicationUser user, int businessId, string businessName, string role, out DateTime expiresAt)
     {
         var claimsList = new List<Claim>
         {
@@ -166,7 +166,7 @@ public class BusinessController : ControllerBase
             new Claim(ClaimTypes.NameIdentifier, user.Id),
             new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
             new Claim(ClaimTypes.Role, role),
-            new Claim("BusinessId", user.CurrentBusinessId!.Value.ToString()),
+            new Claim("BusinessId", businessId.ToString()),
             new Claim("BusinessName", businessName)
         };
 
