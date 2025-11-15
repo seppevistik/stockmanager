@@ -8,9 +8,9 @@ public class SalesOrder : BaseEntity
 {
     public string OrderNumber { get; set; } = string.Empty;
 
-    // Customer Information
-    public int CustomerId { get; set; }
-    public Company Customer { get; set; } = null!;
+    // Customer Information (optional - allows for daily summaries without customers)
+    public int? CustomerId { get; set; }
+    public Customer? Customer { get; set; }
 
     // Shipping Information
     public string ShipToName { get; set; } = string.Empty;

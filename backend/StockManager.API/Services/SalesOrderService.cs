@@ -38,7 +38,7 @@ public class SalesOrderService
             var searchTerm = query.SearchTerm.ToLower();
             queryable = queryable.Where(so =>
                 so.OrderNumber.ToLower().Contains(searchTerm) ||
-                so.Customer.Name.ToLower().Contains(searchTerm) ||
+                (so.Customer != null && so.Customer.Name.ToLower().Contains(searchTerm)) ||
                 so.CustomerReference!.ToLower().Contains(searchTerm));
         }
 
@@ -92,7 +92,7 @@ public class SalesOrderService
                 Id = so.Id,
                 OrderNumber = so.OrderNumber,
                 CustomerId = so.CustomerId,
-                CustomerName = so.Customer.Name,
+                CustomerName = so.Customer != null ? so.Customer.Name : null,
                 OrderDate = so.OrderDate,
                 RequiredDate = so.RequiredDate,
                 Status = so.Status,
@@ -137,12 +137,15 @@ public class SalesOrderService
         string userId,
         CreateSalesOrderRequest request)
     {
-        // Validate customer exists and belongs to business
-        var customer = await _context.Companies
-            .FirstOrDefaultAsync(c => c.Id == request.CustomerId && c.BusinessId == businessId);
+        // Validate customer exists and belongs to business (if provided)
+        if (request.CustomerId.HasValue)
+        {
+            var customer = await _context.Customers
+                .FirstOrDefaultAsync(c => c.Id == request.CustomerId.Value && c.BusinessId == businessId);
 
-        if (customer == null)
-            throw new InvalidOperationException("Customer not found");
+            if (customer == null)
+                throw new InvalidOperationException("Customer not found");
+        }
 
         // Validate products exist and belong to business
         var productIds = request.Lines.Select(l => l.ProductId).Distinct().ToList();
@@ -250,12 +253,15 @@ public class SalesOrderService
         if (salesOrder.Status != SalesOrderStatus.Draft)
             throw new InvalidOperationException("Only draft orders can be updated");
 
-        // Validate customer exists and belongs to business
-        var customer = await _context.Companies
-            .FirstOrDefaultAsync(c => c.Id == request.CustomerId && c.BusinessId == businessId);
+        // Validate customer exists and belongs to business (if provided)
+        if (request.CustomerId.HasValue)
+        {
+            var customer = await _context.Customers
+                .FirstOrDefaultAsync(c => c.Id == request.CustomerId.Value && c.BusinessId == businessId);
 
-        if (customer == null)
-            throw new InvalidOperationException("Customer not found");
+            if (customer == null)
+                throw new InvalidOperationException("Customer not found");
+        }
 
         // Validate products exist and belong to business
         var productIds = request.Lines.Select(l => l.ProductId).Distinct().ToList();
@@ -900,8 +906,8 @@ public class SalesOrderService
                 ? queryable.OrderByDescending(so => so.OrderNumber)
                 : queryable.OrderBy(so => so.OrderNumber),
             "customer" => isDescending
-                ? queryable.OrderByDescending(so => so.Customer.Name)
-                : queryable.OrderBy(so => so.Customer.Name),
+                ? queryable.OrderByDescending(so => so.Customer != null ? so.Customer.Name : "")
+                : queryable.OrderBy(so => so.Customer != null ? so.Customer.Name : ""),
             "status" => isDescending
                 ? queryable.OrderByDescending(so => so.Status)
                 : queryable.OrderBy(so => so.Status),
@@ -925,8 +931,8 @@ public class SalesOrderService
             OrderNumber = salesOrder.OrderNumber,
             BusinessId = salesOrder.BusinessId,
             CustomerId = salesOrder.CustomerId,
-            CustomerName = salesOrder.Customer.Name,
-            CustomerEmail = salesOrder.Customer.Email ?? string.Empty,
+            CustomerName = salesOrder.Customer?.Name,
+            CustomerEmail = salesOrder.Customer?.Email,
             ShipToName = salesOrder.ShipToName,
             ShipToAddress = salesOrder.ShipToAddress,
             ShipToCity = salesOrder.ShipToCity,
