@@ -36,17 +36,15 @@ export interface PickedLineResult {
   template: `
     <h2 mat-dialog-title>Complete Picking</h2>
     <mat-dialog-content>
-      <p>Enter the quantities picked for each line item. You can pick partial quantities if needed.</p>
+      <p>Enter the quantities picked for each line item.</p>
       <form [formGroup]="form">
         <div class="picking-table">
           <table>
             <thead>
               <tr>
                 <th>Product</th>
-                <th>Ordered</th>
-                <th>Pick Qty</th>
-                <th>Location</th>
-                <th>Notes</th>
+                <th class="text-center">Ordered</th>
+                <th class="text-center">Pick Qty</th>
               </tr>
             </thead>
             <tbody formArrayName="pickedLines">
@@ -62,25 +60,6 @@ export interface PickedLineResult {
                   <mat-form-field appearance="outline" class="compact-field">
                     <input matInput type="number" formControlName="quantityPicked"
                            min="0" [max]="data.lines[i].quantityOrdered" step="0.01">
-                    <mat-error *ngIf="lineForm.get('quantityPicked')?.hasError('required')">
-                      Required
-                    </mat-error>
-                    <mat-error *ngIf="lineForm.get('quantityPicked')?.hasError('min')">
-                      Min 0
-                    </mat-error>
-                    <mat-error *ngIf="lineForm.get('quantityPicked')?.hasError('max')">
-                      Max {{ data.lines[i].quantityOrdered }}
-                    </mat-error>
-                  </mat-form-field>
-                </td>
-                <td>
-                  <mat-form-field appearance="outline" class="compact-field">
-                    <input matInput formControlName="location" placeholder="e.g., A1-B2">
-                  </mat-form-field>
-                </td>
-                <td>
-                  <mat-form-field appearance="outline" class="compact-field">
-                    <input matInput formControlName="notes" placeholder="Optional notes">
                   </mat-form-field>
                 </td>
               </tr>
@@ -88,10 +67,10 @@ export interface PickedLineResult {
           </table>
         </div>
 
-        <div class="summary">
-          <button mat-stroked-button type="button" (click)="fillAll()" style="margin-top: 16px;">
+        <div class="actions">
+          <button mat-stroked-button type="button" (click)="fillAll()">
             <mat-icon>done_all</mat-icon>
-            Fill All Ordered Quantities
+            Fill All
           </button>
         </div>
       </form>
@@ -105,8 +84,8 @@ export interface PickedLineResult {
   `,
   styles: [`
     mat-dialog-content {
-      min-width: 1000px;
-      max-width: 1200px;
+      min-width: 600px;
+      max-width: 700px;
       max-height: 600px;
       padding: 20px 24px;
     }
@@ -114,22 +93,20 @@ export interface PickedLineResult {
     p {
       margin-bottom: 16px;
       color: rgba(0, 0, 0, 0.6);
-      font-size: 0.9em;
     }
 
     .picking-table {
       overflow-x: auto;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      table-layout: fixed;
     }
 
     th, td {
-      padding: 8px 12px;
+      padding: 12px 16px;
       text-align: left;
       border-bottom: 1px solid rgba(0, 0, 0, 0.12);
     }
@@ -137,66 +114,45 @@ export interface PickedLineResult {
     th {
       font-weight: 500;
       background-color: rgba(0, 0, 0, 0.04);
-      font-size: 0.9em;
-      white-space: nowrap;
     }
 
-    th:nth-child(1) { width: 30%; }
-    th:nth-child(2) { width: 10%; }
-    th:nth-child(3) { width: 15%; }
-    th:nth-child(4) { width: 20%; }
-    th:nth-child(5) { width: 25%; }
+    .text-center {
+      text-align: center;
+    }
 
     .product-info {
       display: flex;
       flex-direction: column;
-    }
-
-    .product-info strong {
-      font-size: 0.9em;
+      gap: 4px;
     }
 
     .product-name {
-      font-size: 0.8em;
+      font-size: 0.875em;
       color: rgba(0, 0, 0, 0.6);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
     }
 
     .qty-cell {
       text-align: center;
-      font-size: 0.9em;
     }
 
     .compact-field {
+      width: 100px;
       margin-bottom: -1.25em;
-      font-size: 0.9em;
-    }
-
-    .compact-field ::ng-deep .mat-mdc-text-field-wrapper {
-      padding: 0 !important;
-    }
-
-    .compact-field ::ng-deep .mat-mdc-form-field-infix {
-      min-height: 40px !important;
-      padding-top: 8px !important;
-      padding-bottom: 8px !important;
     }
 
     .compact-field ::ng-deep .mat-mdc-form-field-subscript-wrapper {
       display: none;
     }
 
-    .compact-field ::ng-deep input {
-      font-size: 0.9em;
-    }
-
-    .summary {
+    .actions {
       text-align: center;
-      padding: 8px;
+      padding: 12px;
       background-color: rgba(0, 0, 0, 0.02);
       border-radius: 4px;
+    }
+
+    .actions button {
+      margin: 0;
     }
   `]
 })
@@ -224,9 +180,7 @@ export class PickingDialogComponent implements OnInit {
             Validators.min(0),
             Validators.max(line.quantityOrdered)
           ]
-        ],
-        location: [''],
-        notes: ['']
+        ]
       }));
     });
   }
@@ -251,9 +205,7 @@ export class PickingDialogComponent implements OnInit {
     if (this.form.valid) {
       const pickedLines: PickedLineResult[] = this.form.value.pickedLines.map((line: any) => ({
         lineId: line.lineId,
-        quantityPicked: line.quantityPicked,
-        location: line.location || undefined,
-        notes: line.notes || undefined
+        quantityPicked: line.quantityPicked
       }));
       this.dialogRef.close({ pickedLines });
     }
