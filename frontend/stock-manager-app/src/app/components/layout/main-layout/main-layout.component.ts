@@ -10,6 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatDividerModule } from '@angular/material/divider';
 
 interface MenuItem {
   path?: string;
@@ -31,7 +32,8 @@ interface MenuItem {
     MatIconModule,
     MatButtonModule,
     MatMenuModule,
-    MatExpansionModule
+    MatExpansionModule,
+    MatDividerModule
   ],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss'
@@ -79,15 +81,6 @@ export class MainLayoutComponent implements OnInit {
       children: [
         { path: '/customers', icon: 'people', label: 'Customers', roles: [] },
         { path: '/companies', icon: 'business', label: 'Companies', roles: [] }
-      ]
-    },
-    {
-      icon: 'settings',
-      label: 'Settings',
-      roles: [], // Available to all users
-      children: [
-        { path: '/settings', icon: 'tune', label: 'General Settings', roles: [] },
-        { path: '/users', icon: 'people', label: 'User Management', roles: [0] }
       ]
     }
   ];
