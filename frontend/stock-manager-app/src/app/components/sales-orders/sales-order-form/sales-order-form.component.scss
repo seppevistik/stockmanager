@@ -2,6 +2,18 @@
   padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
+
+  ::ng-deep mat-stepper {
+    background: transparent;
+  }
+
+  ::ng-deep .mat-horizontal-stepper-header-container {
+    margin-bottom: 24px;
+  }
+
+  ::ng-deep .mat-step-header {
+    padding: 16px 24px;
+  }
 }
 
 .header {
@@ -104,6 +116,13 @@ mat-card {
   }
 }
 
+.no-lines {
+  text-align: center;
+  padding: 40px;
+  color: rgba(0, 0, 0, 0.6);
+  font-style: italic;
+}
+
 .add-line-button {
   display: flex;
   justify-content: center;
@@ -114,75 +133,56 @@ mat-card {
   }
 }
 
-// Financial Details
-.financial-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 32px;
+// Totals Summary
+.totals-summary {
+  background-color: #f5f5f5;
+  padding: 24px;
+  border-radius: 8px;
+  margin-top: 24px;
 
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
-
-  .form-inputs {
+  .summary-row {
     display: flex;
-    flex-direction: column;
-    gap: 16px;
+    justify-content: space-between;
+    padding: 8px 0;
 
-    mat-form-field {
-      width: 100%;
+    .label {
+      font-weight: 500;
+      color: #666;
+    }
+
+    .value {
+      font-weight: 500;
+
+      &.discount {
+        color: #f44336;
+      }
+    }
+
+    &.total {
+      font-size: 20px;
+      font-weight: 600;
+      padding-top: 12px;
+
+      .label,
+      .value {
+        color: #333;
+      }
     }
   }
 
-  .totals-summary {
-    background-color: #f5f5f5;
-    padding: 24px;
-    border-radius: 8px;
-
-    .summary-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 8px 0;
-
-      .label {
-        font-weight: 500;
-        color: #666;
-      }
-
-      .value {
-        font-weight: 500;
-
-        &.discount {
-          color: #4caf50;
-        }
-      }
-
-      &.total {
-        font-size: 20px;
-        font-weight: 600;
-        padding-top: 12px;
-
-        .label,
-        .value {
-          color: #333;
-        }
-      }
-    }
-
-    .summary-divider {
-      height: 1px;
-      background-color: #d0d0d0;
-      margin: 12px 0;
-    }
+  mat-divider {
+    margin: 12px 0;
   }
 }
 
-// Form Actions
-.form-actions {
+// Step Actions
+.step-actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 16px;
   padding: 24px 0;
+  margin-top: 24px;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
 
   button {
     min-width: 120px;
@@ -190,11 +190,126 @@ mat-card {
     mat-icon {
       margin-right: 8px;
     }
+  }
+}
 
-    mat-spinner {
-      display: inline-block;
-      margin-right: 8px;
+// Summary sections styling
+.summary-section {
+  margin-bottom: 32px;
+
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 16px 0;
+    color: rgba(0, 0, 0, 0.87);
+    font-size: 18px;
+    font-weight: 500;
+
+    mat-icon {
+      color: rgba(0, 0, 0, 0.54);
     }
+  }
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  &.full-width {
+    grid-column: 1 / -1;
+  }
+
+  .label {
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.6);
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+
+  .value {
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.87);
+    white-space: pre-line;
+  }
+}
+
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+
+  th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  }
+
+  th {
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.6);
+    font-size: 12px;
+    text-transform: uppercase;
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+
+  td {
+    color: rgba(0, 0, 0, 0.87);
+  }
+
+  .product-info {
+    .product-name {
+      font-size: 12px;
+      color: rgba(0, 0, 0, 0.6);
+      margin-top: 4px;
+    }
+  }
+}
+
+.financial-summary {
+  max-width: 500px;
+  margin-left: auto;
+  background-color: #f5f5f5;
+  padding: 24px;
+  border-radius: 8px;
+  margin-top: 16px;
+
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+
+    &.total {
+      font-size: 18px;
+      font-weight: 600;
+      padding-top: 16px;
+      color: #333;
+    }
+
+    .label {
+      font-weight: 500;
+      color: #666;
+    }
+
+    .value {
+      font-weight: 500;
+
+      &.discount {
+        color: #f44336;
+      }
+    }
+  }
+
+  mat-divider {
+    margin: 12px 0;
   }
 }
 
@@ -230,6 +345,10 @@ mat-card {
     grid-template-columns: 1fr;
   }
 
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
   .lines-table-container {
     margin: 0 -10px;
   }
@@ -254,18 +373,16 @@ mat-card {
     }
   }
 
-  .add-line-button {
-    button {
-      width: 100%;
-    }
-  }
-
-  .form-actions {
+  .step-actions {
     flex-direction: column-reverse;
 
     button {
       width: 100%;
     }
+  }
+
+  .financial-summary {
+    max-width: 100%;
   }
 }
 
@@ -283,16 +400,15 @@ mat-card {
     }
   }
 
-  .financial-grid {
-    .totals-summary {
-      padding: 16px;
+  .totals-summary,
+  .financial-summary {
+    padding: 16px;
 
-      .summary-row {
-        font-size: 14px;
+    .summary-row {
+      font-size: 14px;
 
-        &.total {
-          font-size: 18px;
-        }
+      &.total {
+        font-size: 18px;
       }
     }
   }

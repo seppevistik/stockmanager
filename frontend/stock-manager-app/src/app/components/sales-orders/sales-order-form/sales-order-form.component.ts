@@ -405,6 +405,11 @@ export class SalesOrderFormComponent implements OnInit {
     if (this.customerDetailsForm.invalid || this.productsForm.invalid) {
       this.customerDetailsForm.markAllAsTouched();
       this.productsForm.markAllAsTouched();
+
+      // Log validation errors for debugging
+      console.log('Customer Details Form Errors:', this.customerDetailsForm.errors);
+      console.log('Products Form Errors:', this.productsForm.errors);
+
       this.snackBar.open('Please fill in all required fields', 'Close', { duration: 3000 });
       return;
     }
@@ -422,6 +427,8 @@ export class SalesOrderFormComponent implements OnInit {
       ...this.productsForm.value
     };
 
+    console.log('Submitting order with data:', formValue);
+
     if (this.isEditMode && this.salesOrderId) {
       const request: UpdateSalesOrderRequest = {
         ...formValue,
@@ -438,10 +445,11 @@ export class SalesOrderFormComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error updating sales order:', error);
+          console.error('Error details:', error.error);
           this.snackBar.open(
-            error.error?.message || 'Error updating sales order',
+            error.error?.message || error.error?.title || 'Error updating sales order',
             'Close',
-            { duration: 3000 }
+            { duration: 5000 }
           );
           this.submitting = false;
         }
@@ -456,11 +464,20 @@ export class SalesOrderFormComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error creating sales order:', error);
-          this.snackBar.open(
-            error.error?.message || 'Error creating sales order',
-            'Close',
-            { duration: 3000 }
-          );
+          console.error('Error details:', error.error);
+
+          // Show detailed error message
+          let errorMessage = 'Error creating sales order';
+          if (error.error?.errors) {
+            const errorMessages = Object.values(error.error.errors).flat();
+            errorMessage = errorMessages.join(', ');
+          } else if (error.error?.message) {
+            errorMessage = error.error.message;
+          } else if (error.error?.title) {
+            errorMessage = error.error.title;
+          }
+
+          this.snackBar.open(errorMessage, 'Close', { duration: 5000 });
           this.submitting = false;
         }
       });
