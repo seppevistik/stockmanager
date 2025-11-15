@@ -88,8 +88,8 @@ export interface PickedLineResult {
     }
 
     mat-dialog-content {
-      width: 600px;
-      max-width: 600px;
+      width: 550px;
+      max-width: 550px;
       padding: 16px 20px;
       overflow: hidden;
       box-sizing: border-box;

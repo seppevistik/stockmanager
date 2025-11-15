@@ -196,7 +196,7 @@ export class SalesOrderDetailComponent implements OnInit {
     if (!this.salesOrder || !this.canCompletePicking()) return;
 
     const dialogRef = this.dialog.open(PickingDialogComponent, {
-      width: '650px',
+      width: '600px',
       data: {
         lines: this.salesOrder.lines
       }
