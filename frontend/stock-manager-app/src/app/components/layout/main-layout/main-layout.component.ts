@@ -130,8 +130,11 @@ export class MainLayoutComponent implements OnInit {
           localStorage.setItem('refresh_token', response.refreshToken);
         }
 
-        // Update current user
+        // Update current user with all required properties
         this.authService.setCurrentUser({
+          token: response.token,
+          refreshToken: response.refreshToken || this.currentUser?.refreshToken || '',
+          expiresAt: response.expiresAt,
           userId: response.userId,
           email: response.email,
           firstName: response.firstName,
