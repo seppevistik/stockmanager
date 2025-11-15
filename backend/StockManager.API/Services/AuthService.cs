@@ -102,6 +102,13 @@ public class AuthService
         // Get user's businesses
         var userBusinesses = await GetUserBusinessesAsync(user.Id);
 
+        // Auto-select business if user has only one and no current business set
+        if (!user.CurrentBusinessId.HasValue && userBusinesses.Count == 1)
+        {
+            user.CurrentBusinessId = userBusinesses[0].BusinessId;
+            await _userManager.UpdateAsync(user);
+        }
+
         // Get current business info if exists
         Business? currentBusiness = null;
         UserBusiness? currentUserBusiness = null;

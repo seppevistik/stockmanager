@@ -18,6 +18,7 @@ interface MenuItem {
   icon: string;
   label: string;
   roles: number[];
+  requiresBusiness?: boolean;
   children?: MenuItem[];
 }
 
@@ -49,12 +50,14 @@ export class MainLayoutComponent implements OnInit {
       icon: 'dashboard',
       label: 'Dashboard',
       path: '/dashboard',
-      roles: []
+      roles: [],
+      requiresBusiness: false
     },
     {
       icon: 'inventory',
       label: 'Inventory',
       roles: [],
+      requiresBusiness: true,
       children: [
         { path: '/products', icon: 'inventory_2', label: 'Products', roles: [] },
         { path: '/stock-movements', icon: 'swap_horiz', label: 'Stock Movements', roles: [] }
@@ -64,6 +67,7 @@ export class MainLayoutComponent implements OnInit {
       icon: 'shopping_cart',
       label: 'Purchase',
       roles: [],
+      requiresBusiness: true,
       children: [
         { path: '/purchase-orders', icon: 'shopping_cart', label: 'Purchase Orders', roles: [] },
         { path: '/receipts', icon: 'receipt_long', label: 'Receipts', roles: [] }
@@ -73,6 +77,7 @@ export class MainLayoutComponent implements OnInit {
       icon: 'point_of_sale',
       label: 'Sales',
       roles: [],
+      requiresBusiness: true,
       children: [
         { path: '/sales-orders', icon: 'point_of_sale', label: 'Sales Orders', roles: [] }
       ]
@@ -81,6 +86,7 @@ export class MainLayoutComponent implements OnInit {
       icon: 'business',
       label: 'Business',
       roles: [],
+      requiresBusiness: true,
       children: [
         { path: '/customers', icon: 'people', label: 'Customers', roles: [] },
         { path: '/companies', icon: 'business', label: 'Companies', roles: [] }
@@ -162,6 +168,11 @@ export class MainLayoutComponent implements OnInit {
 
   shouldShowMenuGroup(group: MenuItem): boolean {
     if (!this.currentUser) return false;
+
+    // Hide business-dependent menu items if no business is selected
+    if (group.requiresBusiness && !this.currentUser.businessId) {
+      return false;
+    }
 
     // If the group itself has role restrictions, check them
     if (group.roles.length > 0 && !group.roles.includes(this.currentUser.role)) {
