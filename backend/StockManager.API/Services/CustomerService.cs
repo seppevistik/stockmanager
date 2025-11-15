@@ -84,8 +84,7 @@ public class CustomerService
             Items = items,
             TotalCount = totalCount,
             Page = query.Page,
-            PageSize = query.PageSize,
-            TotalPages = (int)Math.Ceiling(totalCount / (double)query.PageSize)
+            PageSize = query.PageSize
         };
     }
 
