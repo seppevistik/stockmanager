@@ -15,6 +15,8 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatStepperModule } from '@angular/material/stepper';
+import { MatDividerModule } from '@angular/material/divider';
 import { Observable, startWith, map } from 'rxjs';
 import { SalesOrderService } from '../../../services/sales-order.service';
 import { CustomerService } from '../../../services/customer.service';
@@ -59,13 +61,18 @@ function futureDateValidator(control: AbstractControl): ValidationErrors | null 
     MatSnackBarModule,
     MatTableModule,
     MatTooltipModule,
-    MatAutocompleteModule
+    MatAutocompleteModule,
+    MatStepperModule,
+    MatDividerModule
   ],
   templateUrl: './sales-order-form.component.html',
   styleUrl: './sales-order-form.component.scss'
 })
 export class SalesOrderFormComponent implements OnInit {
-  form!: FormGroup;
+  // Form groups for each step
+  customerDetailsForm!: FormGroup;
+  productsForm!: FormGroup;
+
   isEditMode = false;
   salesOrderId?: number;
   loading = false;
@@ -110,14 +117,17 @@ export class SalesOrderFormComponent implements OnInit {
     }
 
     // Watch for changes to recalculate totals
-    this.form.valueChanges.subscribe(() => {
+    this.productsForm.valueChanges.subscribe(() => {
       this.calculateTotals();
     });
   }
 
   initializeForm(): void {
-    this.form = this.fb.group({
-      customerId: [null], // Optional - can be null for daily summaries
+    // Step 1: Customer Details
+    this.customerDetailsForm = this.fb.group({
+      customerId: [null],
+      customerReference: [''],
+      priority: [Priority.Normal, Validators.required],
 
       // Shipping Information
       shipToName: ['', Validators.required],
@@ -127,30 +137,30 @@ export class SalesOrderFormComponent implements OnInit {
       shipToPostalCode: ['', Validators.required],
       shipToCountry: ['USA', Validators.required],
       shipToPhone: [''],
+      shippingMethod: [''],
+
+      // Dates
+      requiredDate: [null, futureDateValidator],
+      promisedDate: [null, futureDateValidator],
+
+      // Notes
+      notes: [''],
+      internalNotes: ['']
+    });
+
+    // Step 2: Products
+    this.productsForm = this.fb.group({
+      lines: this.fb.array([]),
 
       // Financial
       taxRate: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
       shippingCost: [0, [Validators.required, Validators.min(0)]],
-      discountAmount: [0, [Validators.required, Validators.min(0)]],
-
-      // Priority & Dates
-      priority: [Priority.Normal, Validators.required],
-      requiredDate: [null, futureDateValidator],
-      promisedDate: [null, futureDateValidator],
-
-      // Additional Info
-      customerReference: [''],
-      shippingMethod: [''],
-      notes: [''],
-      internalNotes: [''],
-
-      // Order Lines
-      lines: this.fb.array([])
+      discountAmount: [0, [Validators.required, Validators.min(0)]]
     });
   }
 
   get lines(): FormArray {
-    return this.form.get('lines') as FormArray;
+    return this.productsForm.get('lines') as FormArray;
   }
 
   createLineFormGroup(): FormGroup {
@@ -303,8 +313,11 @@ export class SalesOrderFormComponent implements OnInit {
   }
 
   populateForm(order: SalesOrder): void {
-    this.form.patchValue({
+    // Populate customer details form
+    this.customerDetailsForm.patchValue({
       customerId: order.customerId,
+      customerReference: order.customerReference,
+      priority: order.priority,
       shipToName: order.shipToName,
       shipToAddress: order.shipToAddress,
       shipToCity: order.shipToCity,
@@ -312,16 +325,18 @@ export class SalesOrderFormComponent implements OnInit {
       shipToPostalCode: order.shipToPostalCode,
       shipToCountry: order.shipToCountry,
       shipToPhone: order.shipToPhone,
-      taxRate: order.taxRate,
-      shippingCost: order.shippingCost,
-      discountAmount: order.discountAmount,
-      priority: order.priority,
+      shippingMethod: order.shippingMethod,
       requiredDate: order.requiredDate ? new Date(order.requiredDate) : null,
       promisedDate: order.promisedDate ? new Date(order.promisedDate) : null,
-      customerReference: order.customerReference,
-      shippingMethod: order.shippingMethod,
       notes: order.notes,
       internalNotes: order.internalNotes
+    });
+
+    // Populate products form
+    this.productsForm.patchValue({
+      taxRate: order.taxRate,
+      shippingCost: order.shippingCost,
+      discountAmount: order.discountAmount
     });
 
     // Clear existing lines and add lines from order
@@ -343,7 +358,7 @@ export class SalesOrderFormComponent implements OnInit {
     const customer = this.customers.find(c => c.id === customerId);
     if (customer) {
       // Auto-fill shipping address from customer if available
-      this.form.patchValue({
+      this.customerDetailsForm.patchValue({
         shipToName: customer.name,
         shipToAddress: customer.address || '',
         shipToCity: customer.city || '',
@@ -374,21 +389,22 @@ export class SalesOrderFormComponent implements OnInit {
 
   getTaxAmount(): number {
     const subtotal = this.getSubTotal();
-    const taxRate = this.form.get('taxRate')?.value || 0;
+    const taxRate = this.productsForm.get('taxRate')?.value || 0;
     return subtotal * (taxRate / 100);
   }
 
   getTotal(): number {
     const subtotal = this.getSubTotal();
     const tax = this.getTaxAmount();
-    const shipping = this.form.get('shippingCost')?.value || 0;
-    const discount = this.form.get('discountAmount')?.value || 0;
+    const shipping = this.productsForm.get('shippingCost')?.value || 0;
+    const discount = this.productsForm.get('discountAmount')?.value || 0;
     return subtotal + tax + shipping - discount;
   }
 
   onSubmit(): void {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
+    if (this.customerDetailsForm.invalid || this.productsForm.invalid) {
+      this.customerDetailsForm.markAllAsTouched();
+      this.productsForm.markAllAsTouched();
       this.snackBar.open('Please fill in all required fields', 'Close', { duration: 3000 });
       return;
     }
@@ -400,7 +416,11 @@ export class SalesOrderFormComponent implements OnInit {
 
     this.submitting = true;
 
-    const formValue = this.form.value;
+    // Combine both forms
+    const formValue = {
+      ...this.customerDetailsForm.value,
+      ...this.productsForm.value
+    };
 
     if (this.isEditMode && this.salesOrderId) {
       const request: UpdateSalesOrderRequest = {
@@ -445,6 +465,49 @@ export class SalesOrderFormComponent implements OnInit {
         }
       });
     }
+  }
+
+  // Helpers for overview step
+  getSelectedCustomer(): Customer | undefined {
+    const customerId = this.customerDetailsForm.get('customerId')?.value;
+    return this.customers.find(c => c.id === customerId);
+  }
+
+  getSelectedProduct(productId: number): Product | undefined {
+    return this.products.find(p => p.id === productId);
+  }
+
+  getPriorityLabel(): string {
+    const priorityValue = this.customerDetailsForm.get('priority')?.value;
+    return this.priorities.find(p => p.value === priorityValue)?.label || 'Normal';
+  }
+
+  getShipToName(): string {
+    return this.customerDetailsForm.get('shipToName')?.value || '';
+  }
+
+  getShipToAddress(): string {
+    return this.customerDetailsForm.get('shipToAddress')?.value || '';
+  }
+
+  getShipToCity(): string {
+    return this.customerDetailsForm.get('shipToCity')?.value || '';
+  }
+
+  getShipToState(): string {
+    return this.customerDetailsForm.get('shipToState')?.value || '';
+  }
+
+  getShipToPostalCode(): string {
+    return this.customerDetailsForm.get('shipToPostalCode')?.value || '';
+  }
+
+  getShipToCountry(): string {
+    return this.customerDetailsForm.get('shipToCountry')?.value || '';
+  }
+
+  getShipToPhone(): string {
+    return this.customerDetailsForm.get('shipToPhone')?.value || '';
   }
 
   onCancel(): void {
