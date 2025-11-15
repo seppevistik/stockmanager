@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
+import { BusinessService, UserBusinessDto } from '../../../services/business.service';
 import { User } from '../../../models/user.model';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -40,6 +41,8 @@ interface MenuItem {
 })
 export class MainLayoutComponent implements OnInit {
   currentUser: User | null = null;
+  userBusinesses: UserBusinessDto[] = [];
+  loadingBusinesses = false;
 
   menuGroups: MenuItem[] = [
     {
@@ -85,11 +88,66 @@ export class MainLayoutComponent implements OnInit {
     }
   ];
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private businessService: BusinessService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
+      if (user && user.businessId) {
+        this.loadUserBusinesses();
+      }
+    });
+  }
+
+  loadUserBusinesses(): void {
+    this.loadingBusinesses = true;
+    this.businessService.getMyBusinesses().subscribe({
+      next: (businesses) => {
+        this.userBusinesses = businesses;
+        this.loadingBusinesses = false;
+      },
+      error: (error) => {
+        console.error('Error loading user businesses:', error);
+        this.loadingBusinesses = false;
+      }
+    });
+  }
+
+  switchBusiness(businessId: number): void {
+    if (!this.currentUser || this.currentUser.businessId === businessId) {
+      return;
+    }
+
+    this.businessService.switchBusiness(businessId).subscribe({
+      next: (response) => {
+        // Update the auth token with new business context
+        localStorage.setItem('access_token', response.token);
+        if (response.refreshToken) {
+          localStorage.setItem('refresh_token', response.refreshToken);
+        }
+
+        // Update current user
+        this.authService.setCurrentUser({
+          userId: response.userId,
+          email: response.email,
+          firstName: response.firstName,
+          lastName: response.lastName,
+          role: parseInt(response.role),
+          businessId: response.businessId,
+          businessName: response.businessName
+        });
+
+        // Reload the page to refresh all business-scoped data
+        window.location.reload();
+      },
+      error: (error) => {
+        console.error('Error switching business:', error);
+        alert('Failed to switch business. Please try again.');
+      }
     });
   }
 

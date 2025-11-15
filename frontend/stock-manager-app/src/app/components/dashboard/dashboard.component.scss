@@ -259,3 +259,63 @@
     font-size: 15px;
   }
 }
+
+// No Business State
+.no-business-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  padding: 32px;
+}
+
+.no-business-card {
+  max-width: 600px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e2e1;
+
+  mat-card-content {
+    text-align: center;
+    padding: 48px 32px;
+  }
+
+  .no-business-icon {
+    font-size: 80px;
+    width: 80px;
+    height: 80px;
+    color: #006c50;
+    margin: 0 auto 24px;
+  }
+
+  h2 {
+    font-size: 28px;
+    font-weight: 500;
+    color: #1a1c1b;
+    margin: 0 0 16px 0;
+  }
+
+  p {
+    font-size: 16px;
+    color: #444746;
+    margin: 0 0 12px 0;
+    line-height: 1.5;
+
+    &.subtitle {
+      color: #767776;
+      font-size: 14px;
+      margin-bottom: 32px;
+    }
+  }
+
+  .create-business-btn {
+    border-radius: 8px;
+    padding: 0 32px;
+    height: 48px;
+    font-size: 16px;
+
+    mat-icon {
+      margin-right: 8px;
+    }
+  }
+}

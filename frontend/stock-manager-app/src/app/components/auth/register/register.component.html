@@ -26,14 +26,6 @@
         </div>
 
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Business Name</mat-label>
-          <input matInput formControlName="businessName" placeholder="My Company LLC">
-          @if (businessName?.invalid && businessName?.touched) {
-            <mat-error>Business name is required</mat-error>
-          }
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="full-width">
           <mat-label>Email</mat-label>
           <input matInput type="email" formControlName="email" placeholder="your@email.com">
           @if (email?.invalid && email?.touched) {
@@ -61,15 +53,6 @@
               }
             </mat-error>
           }
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Role</mat-label>
-          <mat-select formControlName="role">
-            @for (role of roles; track role.value) {
-              <mat-option [value]="role.value">{{ role.label }}</mat-option>
-            }
-          </mat-select>
         </mat-form-field>
 
         @if (errorMessage) {

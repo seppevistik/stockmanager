@@ -1,13 +1,18 @@
 import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
+import { AuthService } from '../../services/auth.service';
 import { DashboardService } from '../../services/dashboard.service';
+import { BusinessService } from '../../services/business.service';
 import { DashboardStats, StockSummary, RecentActivity, DailySalesData } from '../../models/dashboard.model';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
+import { MatDialogModule } from '@angular/material/dialog';
+import { CreateBusinessDialogComponent } from '../create-business-dialog/create-business-dialog.component';
 import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
@@ -22,7 +27,8 @@ Chart.register(...registerables);
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    MatTableModule
+    MatTableModule,
+    MatDialogModule
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
@@ -36,13 +42,29 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   salesCostsData: DailySalesData[] = [];
   loading = true;
   displayedColumns = ['productName', 'movementType', 'quantity', 'userName', 'createdAt'];
+  hasNoBusiness = false;
 
   private chart?: Chart;
 
-  constructor(private dashboardService: DashboardService) {}
+  constructor(
+    private dashboardService: DashboardService,
+    private authService: AuthService,
+    private businessService: BusinessService,
+    private dialog: MatDialog,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
-    this.loadDashboard();
+    // Check if user has a business
+    this.authService.currentUser$.subscribe(user => {
+      if (!user?.businessId) {
+        this.hasNoBusiness = true;
+        this.loading = false;
+      } else {
+        this.hasNoBusiness = false;
+        this.loadDashboard();
+      }
+    });
   }
 
   ngAfterViewInit(): void {
@@ -54,6 +76,10 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   }
 
   loadDashboard(): void {
+    if (this.hasNoBusiness) {
+      return;
+    }
+
     this.loading = true;
 
     this.dashboardService.getStats().subscribe({
@@ -93,6 +119,20 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       },
       error: (error) => {
         console.error('Error loading sales/costs data:', error);
+      }
+    });
+  }
+
+  openCreateBusinessDialog(): void {
+    const dialogRef = this.dialog.open(CreateBusinessDialogComponent, {
+      width: '500px',
+      disableClose: false
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result?.businessId) {
+        // Business created successfully, reload the page to get new token
+        window.location.reload();
       }
     });
   }

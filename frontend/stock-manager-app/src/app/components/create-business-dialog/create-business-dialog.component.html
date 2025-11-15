@@ -1,0 +1,53 @@
+<h2 mat-dialog-title>Create New Business</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="businessForm">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Business Name</mat-label>
+      <input matInput formControlName="name" placeholder="My Company LLC" autofocus>
+      @if (name?.invalid && name?.touched) {
+        <mat-error>Business name is required</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Description (optional)</mat-label>
+      <textarea
+        matInput
+        formControlName="description"
+        placeholder="Brief description of your business"
+        rows="3"></textarea>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Your Role</mat-label>
+      <mat-select formControlName="userRole">
+        @for (role of roles; track role.value) {
+          <mat-option [value]="role.value">{{ role.label }}</mat-option>
+        }
+      </mat-select>
+      <mat-hint>You'll be assigned this role in the new business</mat-hint>
+    </mat-form-field>
+
+    @if (errorMessage) {
+      <div class="error-message">
+        {{ errorMessage }}
+      </div>
+    }
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()" [disabled]="loading">Cancel</button>
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="onSubmit()"
+    [disabled]="loading || businessForm.invalid">
+    @if (loading) {
+      <mat-spinner diameter="20"></mat-spinner>
+    } @else {
+      Create Business
+    }
+  </button>
+</mat-dialog-actions>

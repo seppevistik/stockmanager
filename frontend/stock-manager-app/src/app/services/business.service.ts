@@ -31,6 +31,33 @@ export interface UpdateBusinessDto {
   taxNumber?: string;
 }
 
+export interface CreateBusinessDto {
+  name: string;
+  description?: string;
+  userRole: number;
+}
+
+export interface UserBusinessDto {
+  businessId: number;
+  businessName: string;
+  role: string;
+  isActive: boolean;
+}
+
+export interface SwitchBusinessResponse {
+  token: string;
+  refreshToken?: string;
+  expiresAt: Date;
+  userId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  businessId: number;
+  businessName: string;
+  businesses: UserBusinessDto[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -45,5 +72,17 @@ export class BusinessService {
 
   updateBusiness(data: UpdateBusinessDto): Observable<void> {
     return this.http.put<void>(this.API_URL, data);
+  }
+
+  createBusiness(data: CreateBusinessDto): Observable<{ businessId: number }> {
+    return this.http.post<{ businessId: number }>(`${this.API_URL}/create`, data);
+  }
+
+  getMyBusinesses(): Observable<UserBusinessDto[]> {
+    return this.http.get<UserBusinessDto[]>(`${this.API_URL}/my-businesses`);
+  }
+
+  switchBusiness(businessId: number): Observable<SwitchBusinessResponse> {
+    return this.http.post<SwitchBusinessResponse>(`${this.API_URL}/switch`, { businessId });
   }
 }

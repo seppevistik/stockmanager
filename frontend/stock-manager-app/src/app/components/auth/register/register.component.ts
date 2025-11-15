@@ -3,12 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
-import { UserRole } from '../../../models/user.model';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
@@ -22,7 +20,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatSelectModule,
     MatProgressSpinnerModule
   ],
   templateUrl: './register.component.html',
@@ -32,12 +29,6 @@ export class RegisterComponent {
   registerForm: FormGroup;
   loading = false;
   errorMessage = '';
-  roles = [
-    { value: UserRole.Admin, label: 'Admin' },
-    { value: UserRole.Manager, label: 'Manager' },
-    { value: UserRole.Staff, label: 'Staff' },
-    { value: UserRole.Viewer, label: 'Viewer' }
-  ];
 
   constructor(
     private fb: FormBuilder,
@@ -48,9 +39,7 @@ export class RegisterComponent {
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       firstName: ['', Validators.required],
-      lastName: ['', Validators.required],
-      businessName: ['', Validators.required],
-      role: [UserRole.Admin, Validators.required]
+      lastName: ['', Validators.required]
     });
   }
 
@@ -64,6 +53,8 @@ export class RegisterComponent {
 
     this.authService.register(this.registerForm.value).subscribe({
       next: () => {
+        // After registration, user has no business yet
+        // Redirect to dashboard which will show "create business" option
         this.router.navigate(['/dashboard']);
       },
       error: (error) => {
@@ -87,9 +78,5 @@ export class RegisterComponent {
 
   get lastName() {
     return this.registerForm.get('lastName');
-  }
-
-  get businessName() {
-    return this.registerForm.get('businessName');
   }
 }

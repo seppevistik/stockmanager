@@ -40,25 +40,14 @@ public class AuthService
             return (false, "User with this email already exists", null);
         }
 
-        // Create business first
-        var business = new Business
-        {
-            Name = registerDto.BusinessName,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        _context.Businesses.Add(business);
-        await _context.SaveChangesAsync();
-
-        // Create user
+        // Create user without business
         var user = new ApplicationUser
         {
             UserName = registerDto.Email,
             Email = registerDto.Email,
             FirstName = registerDto.FirstName,
             LastName = registerDto.LastName,
-            BusinessId = business.Id,
-            Role = registerDto.Role,
+            CurrentBusinessId = null, // No business yet
             IsActive = true,
             CreatedAt = DateTime.UtcNow,
             LastLoginAt = DateTime.UtcNow
@@ -71,7 +60,7 @@ public class AuthService
             return (false, string.Join(", ", result.Errors.Select(e => e.Description)), null);
         }
 
-        var token = GenerateJwtToken(user, business.Name, out DateTime expiresAt);
+        var token = GenerateJwtToken(user, null, null, out DateTime expiresAt);
         var refreshToken = await GenerateRefreshTokenAsync(user, ipAddress);
 
         var response = new AuthResponseDto
@@ -83,9 +72,10 @@ public class AuthService
             Email = user.Email!,
             FirstName = user.FirstName,
             LastName = user.LastName,
-            Role = user.Role.ToString(),
-            BusinessId = user.BusinessId,
-            BusinessName = business.Name
+            Role = null, // No business yet, so no role
+            BusinessId = null,
+            BusinessName = null,
+            Businesses = new List<UserBusinessDto>() // Empty list
         };
 
         return (true, null, response);
@@ -109,13 +99,21 @@ public class AuthService
         user.LastLoginAt = DateTime.UtcNow;
         await _userManager.UpdateAsync(user);
 
-        var business = await _context.Businesses.FindAsync(user.BusinessId);
-        if (business == null)
+        // Get user's businesses
+        var userBusinesses = await GetUserBusinessesAsync(user.Id);
+
+        // Get current business info if exists
+        Business? currentBusiness = null;
+        UserBusiness? currentUserBusiness = null;
+
+        if (user.CurrentBusinessId.HasValue)
         {
-            return (false, "Business not found", null);
+            currentBusiness = await _context.Businesses.FindAsync(user.CurrentBusinessId.Value);
+            currentUserBusiness = await _context.UserBusinesses
+                .FirstOrDefaultAsync(ub => ub.UserId == user.Id && ub.BusinessId == user.CurrentBusinessId.Value && ub.IsActive);
         }
 
-        var token = GenerateJwtToken(user, business.Name, out DateTime expiresAt);
+        var token = GenerateJwtToken(user, currentBusiness?.Name, currentUserBusiness?.Role.ToString(), out DateTime expiresAt);
         var refreshToken = await GenerateRefreshTokenAsync(user, ipAddress);
 
         var response = new AuthResponseDto
@@ -127,27 +125,33 @@ public class AuthService
             Email = user.Email!,
             FirstName = user.FirstName,
             LastName = user.LastName,
-            Role = user.Role.ToString(),
-            BusinessId = user.BusinessId,
-            BusinessName = business.Name
+            Role = currentUserBusiness?.Role.ToString(),
+            BusinessId = user.CurrentBusinessId,
+            BusinessName = currentBusiness?.Name,
+            Businesses = userBusinesses
         };
 
         return (true, null, response);
     }
 
-    private string GenerateJwtToken(ApplicationUser user, string businessName, out DateTime expiresAt)
+    private string GenerateJwtToken(ApplicationUser user, string? businessName, string? role, out DateTime expiresAt)
     {
-        var claims = new[]
+        var claimsList = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id),
             new Claim(JwtRegisteredClaimNames.Email, user.Email!),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim(ClaimTypes.NameIdentifier, user.Id),
-            new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
-            new Claim(ClaimTypes.Role, user.Role.ToString()),
-            new Claim("BusinessId", user.BusinessId.ToString()),
-            new Claim("BusinessName", businessName)
+            new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}")
         };
+
+        // Add business-specific claims only if user has a current business
+        if (user.CurrentBusinessId.HasValue && !string.IsNullOrEmpty(businessName) && !string.IsNullOrEmpty(role))
+        {
+            claimsList.Add(new Claim(ClaimTypes.Role, role));
+            claimsList.Add(new Claim("BusinessId", user.CurrentBusinessId.Value.ToString()));
+            claimsList.Add(new Claim("BusinessName", businessName));
+        }
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
             _configuration["Jwt:SecretKey"] ?? throw new InvalidOperationException("JWT secret key not configured")));
@@ -160,11 +164,28 @@ public class AuthService
         var token = new JwtSecurityToken(
             issuer: _configuration["Jwt:Issuer"],
             audience: _configuration["Jwt:Audience"],
-            claims: claims,
+            claims: claimsList,
             expires: expiresAt,
             signingCredentials: creds);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    private async Task<List<UserBusinessDto>> GetUserBusinessesAsync(string userId)
+    {
+        var userBusinesses = await _context.UserBusinesses
+            .Include(ub => ub.Business)
+            .Where(ub => ub.UserId == userId && ub.IsActive)
+            .Select(ub => new UserBusinessDto
+            {
+                BusinessId = ub.BusinessId,
+                BusinessName = ub.Business.Name,
+                Role = ub.Role.ToString(),
+                IsActive = ub.IsActive
+            })
+            .ToListAsync();
+
+        return userBusinesses;
     }
 
     private async Task<RefreshToken> GenerateRefreshTokenAsync(ApplicationUser user, string ipAddress)
@@ -220,12 +241,20 @@ public class AuthService
     public async Task<UserProfileDto?> GetUserProfileAsync(string userId)
     {
         var user = await _context.Users
-            .Include(u => u.Business)
+            .Include(u => u.CurrentBusiness)
             .FirstOrDefaultAsync(u => u.Id == userId);
 
         if (user == null)
         {
             return null;
+        }
+
+        // Get current business role if user has a current business
+        UserBusiness? currentUserBusiness = null;
+        if (user.CurrentBusinessId.HasValue)
+        {
+            currentUserBusiness = await _context.UserBusinesses
+                .FirstOrDefaultAsync(ub => ub.UserId == userId && ub.BusinessId == user.CurrentBusinessId.Value && ub.IsActive);
         }
 
         return new UserProfileDto
@@ -234,10 +263,10 @@ public class AuthService
             Email = user.Email!,
             FirstName = user.FirstName,
             LastName = user.LastName,
-            Role = (int)user.Role,
-            RoleName = user.Role.ToString(),
-            BusinessId = user.BusinessId,
-            BusinessName = user.Business.Name,
+            Role = currentUserBusiness != null ? (int)currentUserBusiness.Role : null,
+            RoleName = currentUserBusiness?.Role.ToString(),
+            BusinessId = user.CurrentBusinessId,
+            BusinessName = user.CurrentBusiness?.Name,
             IsActive = user.IsActive,
             CreatedAt = user.CreatedAt,
             LastLoginAt = user.LastLoginAt
@@ -387,7 +416,7 @@ public class AuthService
     public async Task<(bool Success, string? Error, RefreshTokenResponse? Response)> RefreshTokenAsync(string refreshToken, string ipAddress)
     {
         var user = await _context.Users
-            .Include(u => u.Business)
+            .Include(u => u.CurrentBusiness)
             .FirstOrDefaultAsync(u => u.RefreshTokens.Any(t => t.Token == refreshToken));
 
         if (user == null)
@@ -403,8 +432,19 @@ public class AuthService
             return (false, "Invalid or expired refresh token", null);
         }
 
+        // Get current business info if exists
+        Business? currentBusiness = null;
+        UserBusiness? currentUserBusiness = null;
+
+        if (user.CurrentBusinessId.HasValue)
+        {
+            currentBusiness = await _context.Businesses.FindAsync(user.CurrentBusinessId.Value);
+            currentUserBusiness = await _context.UserBusinesses
+                .FirstOrDefaultAsync(ub => ub.UserId == user.Id && ub.BusinessId == user.CurrentBusinessId.Value && ub.IsActive);
+        }
+
         // Generate new tokens
-        var newJwtToken = GenerateJwtToken(user, user.Business.Name, out DateTime expiresAt);
+        var newJwtToken = GenerateJwtToken(user, currentBusiness?.Name, currentUserBusiness?.Role.ToString(), out DateTime expiresAt);
         var newRefreshToken = await GenerateRefreshTokenAsync(user, ipAddress);
 
         // Revoke old refresh token and mark it as replaced

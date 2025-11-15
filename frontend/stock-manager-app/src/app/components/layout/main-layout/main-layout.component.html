@@ -52,6 +52,16 @@
       <span class="spacer"></span>
 
       @if (currentUser) {
+        <!-- Business Selector -->
+        @if (currentUser.businessId && userBusinesses.length > 1) {
+          <button mat-button [matMenuTriggerFor]="businessMenu" class="business-selector">
+            <mat-icon>business</mat-icon>
+            <span>{{ currentUser.businessName }}</span>
+            <mat-icon>arrow_drop_down</mat-icon>
+          </button>
+        }
+
+        <!-- User Menu -->
         <button mat-button [matMenuTriggerFor]="userMenu">
           <mat-icon>account_circle</mat-icon>
           <span>{{ currentUser.firstName }} {{ currentUser.lastName }}</span>
@@ -59,6 +69,33 @@
         </button>
       }
 
+      <!-- Business Selector Menu -->
+      <mat-menu #businessMenu="matMenu">
+        <div class="menu-header" mat-menu-item disabled>
+          <strong>Switch Business</strong>
+        </div>
+        <mat-divider></mat-divider>
+        @for (business of userBusinesses; track business.businessId) {
+          <button
+            mat-menu-item
+            (click)="switchBusiness(business.businessId)"
+            [disabled]="currentUser?.businessId === business.businessId">
+            <mat-icon>
+              @if (currentUser?.businessId === business.businessId) {
+                check
+              } @else {
+                business
+              }
+            </mat-icon>
+            <span>{{ business.businessName }}</span>
+            @if (currentUser?.businessId === business.businessId) {
+              <span class="current-badge">(Current)</span>
+            }
+          </button>
+        }
+      </mat-menu>
+
+      <!-- User Menu -->
       <mat-menu #userMenu="matMenu">
         @if (currentUser) {
           <div class="user-menu-header" mat-menu-item disabled>
