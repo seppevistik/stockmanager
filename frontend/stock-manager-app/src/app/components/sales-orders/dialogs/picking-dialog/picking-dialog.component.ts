@@ -83,21 +83,25 @@ export interface PickedLineResult {
     </mat-dialog-actions>
   `,
   styles: [`
+    ::ng-deep .mat-mdc-dialog-container .mdc-dialog__surface {
+      overflow: hidden !important;
+    }
+
     mat-dialog-content {
       width: 750px;
-      max-height: 70vh;
-      padding: 20px 24px;
-      overflow-y: auto;
+      padding: 16px 20px;
+      overflow: hidden;
     }
 
     p {
-      margin-bottom: 16px;
+      margin-bottom: 12px;
       color: rgba(0, 0, 0, 0.6);
+      font-size: 0.9em;
     }
 
     .picking-table {
-      margin-bottom: 20px;
-      overflow: visible;
+      margin-bottom: 16px;
+      overflow: hidden;
     }
 
     table {
@@ -106,7 +110,7 @@ export interface PickedLineResult {
     }
 
     th, td {
-      padding: 12px 16px;
+      padding: 10px 12px;
       text-align: left;
       border-bottom: 1px solid rgba(0, 0, 0, 0.12);
     }
@@ -114,6 +118,7 @@ export interface PickedLineResult {
     th {
       font-weight: 500;
       background-color: rgba(0, 0, 0, 0.04);
+      font-size: 0.9em;
     }
 
     .text-center {
@@ -123,36 +128,59 @@ export interface PickedLineResult {
     .product-info {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 2px;
+    }
+
+    .product-info strong {
+      font-size: 0.9em;
     }
 
     .product-name {
-      font-size: 0.875em;
+      font-size: 0.8em;
       color: rgba(0, 0, 0, 0.6);
     }
 
     .qty-cell {
       text-align: center;
+      font-size: 0.9em;
     }
 
     .compact-field {
-      width: 100px;
+      width: 90px;
       margin-bottom: -1.25em;
+    }
+
+    .compact-field ::ng-deep .mat-mdc-text-field-wrapper {
+      padding: 0 !important;
+    }
+
+    .compact-field ::ng-deep .mat-mdc-form-field-infix {
+      min-height: 36px !important;
+      padding-top: 6px !important;
+      padding-bottom: 6px !important;
     }
 
     .compact-field ::ng-deep .mat-mdc-form-field-subscript-wrapper {
       display: none;
     }
 
+    .compact-field ::ng-deep input {
+      font-size: 0.9em;
+    }
+
     .actions {
       text-align: center;
-      padding: 12px;
+      padding: 10px;
       background-color: rgba(0, 0, 0, 0.02);
       border-radius: 4px;
     }
 
     .actions button {
       margin: 0;
+    }
+
+    mat-dialog-actions {
+      padding: 12px 16px !important;
     }
   `]
 })
