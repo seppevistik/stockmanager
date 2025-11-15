@@ -423,6 +423,9 @@ logs/
 *.tmp
 *.temp
 
+# Debian packages (build artifacts)
+*.deb
+
 # Mac
 .DS_Store
 
