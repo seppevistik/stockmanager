@@ -141,7 +141,7 @@ public class BusinessController : ControllerBase
         var response = new AuthResponseDto
         {
             Token = token,
-            RefreshToken = null, // Refresh token remains the same
+            RefreshToken = string.Empty, // Refresh token remains the same on client
             ExpiresAt = expiresAt,
             UserId = user.Id,
             Email = user.Email!,
