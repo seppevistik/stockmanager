@@ -20,5 +20,9 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"));
 
         CreateMap<CreateStockMovementDto, StockMovement>();
+
+        // Business mappings
+        CreateMap<Business, BusinessDto>();
+        CreateMap<UpdateBusinessDto, Business>();
     }
 }

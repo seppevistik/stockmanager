@@ -11,6 +11,7 @@ public class UnitOfWork : IUnitOfWork
     private ICompanyRepository? _companies;
     private IPurchaseOrderRepository? _purchaseOrders;
     private IReceiptRepository? _receipts;
+    private IBusinessRepository? _businesses;
 
     public UnitOfWork(ApplicationDbContext context)
     {
@@ -26,6 +27,8 @@ public class UnitOfWork : IUnitOfWork
     public IPurchaseOrderRepository PurchaseOrders => _purchaseOrders ??= new PurchaseOrderRepository(_context);
 
     public IReceiptRepository Receipts => _receipts ??= new ReceiptRepository(_context);
+
+    public IBusinessRepository Businesses => _businesses ??= new BusinessRepository(_context);
 
     public async Task<int> SaveChangesAsync()
     {

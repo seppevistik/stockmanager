@@ -17,6 +17,7 @@ import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { UserManagementService } from '../../../services/user-management.service';
 import { AuthService } from '../../../services/auth.service';
+import { BusinessService, BusinessDto, UpdateBusinessDto } from '../../../services/business.service';
 import { UserDto, CreateUserRequest, UpdateUserRequest, UserStatistics } from '../../../models/user-management.model';
 import { CreateUserDialogComponent } from './create-user-dialog/create-user-dialog.component';
 import { EditUserDialogComponent } from './edit-user-dialog/edit-user-dialog.component';
@@ -65,6 +66,7 @@ export class BusinessSettingsComponent implements OnInit {
     private fb: FormBuilder,
     private userManagementService: UserManagementService,
     private authService: AuthService,
+    private businessService: BusinessService,
     private snackBar: MatSnackBar,
     private dialog: MatDialog
   ) {
@@ -123,13 +125,30 @@ export class BusinessSettingsComponent implements OnInit {
   }
 
   loadBusinessSettings(): void {
-    // Load business settings from current user or API
-    const user = this.authService.getCurrentUser();
-    if (user) {
-      this.businessForm.patchValue({
-        businessName: user.businessName || ''
-      });
-    }
+    this.businessService.getBusiness().subscribe({
+      next: (business) => {
+        this.businessForm.patchValue({
+          businessName: business.name,
+          contactEmail: business.contactEmail || '',
+          contactPhone: business.contactPhone || '',
+          address: business.address || '',
+          city: business.city || '',
+          country: business.country || '',
+          postalCode: business.postalCode || '',
+          taxNumber: business.taxNumber || ''
+        });
+      },
+      error: (error) => {
+        console.error('Error loading business settings:', error);
+        // Fallback to current user data
+        const user = this.authService.getCurrentUser();
+        if (user) {
+          this.businessForm.patchValue({
+            businessName: user.businessName || ''
+          });
+        }
+      }
+    });
   }
 
   applyFilter(): void {
@@ -251,10 +270,29 @@ export class BusinessSettingsComponent implements OnInit {
 
   saveBusinessSettings(): void {
     if (this.businessForm.valid) {
-      // TODO: Implement API call to save business settings
-      // For now, just show success message
-      this.snackBar.open('Business settings saved successfully', 'Close', { duration: 3000 });
-      this.isEditingBusiness = false;
+      const updateDto: UpdateBusinessDto = {
+        name: this.businessForm.value.businessName,
+        contactEmail: this.businessForm.value.contactEmail,
+        contactPhone: this.businessForm.value.contactPhone,
+        address: this.businessForm.value.address,
+        city: this.businessForm.value.city,
+        country: this.businessForm.value.country,
+        postalCode: this.businessForm.value.postalCode,
+        taxNumber: this.businessForm.value.taxNumber
+      };
+
+      this.businessService.updateBusiness(updateDto).subscribe({
+        next: () => {
+          this.snackBar.open('Business settings saved successfully', 'Close', { duration: 3000 });
+          this.isEditingBusiness = false;
+          this.loadBusinessSettings();
+        },
+        error: (error) => {
+          const message = error.error?.message || 'Failed to save business settings';
+          this.snackBar.open(message, 'Close', { duration: 3000 });
+          console.error('Error saving business settings:', error);
+        }
+      });
     }
   }
 }

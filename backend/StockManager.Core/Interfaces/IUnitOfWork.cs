@@ -7,5 +7,6 @@ public interface IUnitOfWork : IDisposable
     ICompanyRepository Companies { get; }
     IPurchaseOrderRepository PurchaseOrders { get; }
     IReceiptRepository Receipts { get; }
+    IBusinessRepository Businesses { get; }
     Task<int> SaveChangesAsync();
 }
