@@ -17,7 +17,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { Observable, startWith, map } from 'rxjs';
 import { SalesOrderService } from '../../../services/sales-order.service';
-import { CompanyService } from '../../../services/company.service';
+import { CustomerService } from '../../../services/customer.service';
 import { ProductService } from '../../../services/product.service';
 import {
   CreateSalesOrderRequest,
@@ -25,7 +25,7 @@ import {
   Priority,
   SalesOrder
 } from '../../../models/sales-order.model';
-import { Company } from '../../../models/company.model';
+import { Customer } from '../../../models/customer.model';
 import { Product } from '../../../models/product.model';
 
 @Component({
@@ -59,7 +59,7 @@ export class SalesOrderFormComponent implements OnInit {
   loading = false;
   submitting = false;
 
-  customers: Company[] = [];
+  customers: Customer[] = [];
   products: Product[] = [];
   filteredProducts: Observable<Product[]>[] = [];
 
@@ -77,7 +77,7 @@ export class SalesOrderFormComponent implements OnInit {
     private router: Router,
     private fb: FormBuilder,
     private salesOrderService: SalesOrderService,
-    private companyService: CompanyService,
+    private customerService: CustomerService,
     private productService: ProductService,
     private snackBar: MatSnackBar
   ) {}
@@ -105,7 +105,7 @@ export class SalesOrderFormComponent implements OnInit {
 
   initializeForm(): void {
     this.form = this.fb.group({
-      customerId: ['', Validators.required],
+      customerId: [null], // Optional - can be null for daily summaries
 
       // Shipping Information
       shipToName: ['', Validators.required],
@@ -205,9 +205,9 @@ export class SalesOrderFormComponent implements OnInit {
   }
 
   loadCustomers(): void {
-    this.companyService.getAll().subscribe({
-      next: (companies) => {
-        this.customers = companies.filter(c => c.isCustomer);
+    this.customerService.getCustomers({ isActive: true, pageSize: 1000 }).subscribe({
+      next: (result) => {
+        this.customers = result.items;
       },
       error: (error) => {
         console.error('Error loading customers:', error);

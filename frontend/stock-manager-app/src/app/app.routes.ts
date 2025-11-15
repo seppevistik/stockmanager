@@ -66,6 +66,20 @@ export const routes: Routes = [
         data: { roles: [UserRole.Admin, UserRole.Manager] }
       },
       {
+        path: 'customers',
+        loadComponent: () => import('./components/customers/customers-list/customers-list.component').then(m => m.CustomersListComponent)
+      },
+      {
+        path: 'customers/new',
+        loadComponent: () => import('./components/customers/customer-form/customer-form.component').then(m => m.CustomerFormComponent),
+        data: { roles: [UserRole.Admin, UserRole.Manager] }
+      },
+      {
+        path: 'customers/edit/:id',
+        loadComponent: () => import('./components/customers/customer-form/customer-form.component').then(m => m.CustomerFormComponent),
+        data: { roles: [UserRole.Admin, UserRole.Manager] }
+      },
+      {
         path: 'purchase-orders',
         loadComponent: () => import('./components/purchase-orders/purchase-orders-list/purchase-orders-list.component').then(m => m.PurchaseOrdersListComponent)
       },

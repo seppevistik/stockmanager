@@ -77,6 +77,7 @@ export class MainLayoutComponent implements OnInit {
       label: 'Business',
       roles: [],
       children: [
+        { path: '/customers', icon: 'people', label: 'Customers', roles: [] },
         { path: '/companies', icon: 'business', label: 'Companies', roles: [] }
       ]
     },

@@ -12,15 +12,16 @@
       <mat-card-content>
         <div class="form-grid">
           <mat-form-field class="full-width">
-            <mat-label>Customer</mat-label>
-            <mat-select formControlName="customerId" (selectionChange)="onCustomerChange($event.value)" required>
+            <mat-label>Customer (Optional)</mat-label>
+            <mat-select formControlName="customerId" (selectionChange)="onCustomerChange($event.value)">
+              <mat-option [value]="null">
+                None (Daily Summary)
+              </mat-option>
               <mat-option *ngFor="let customer of customers" [value]="customer.id">
-                {{ customer.name }}
+                {{ customer.name }}{{ customer.isCompany && customer.companyName ? ' - ' + customer.companyName : '' }}
               </mat-option>
             </mat-select>
-            <mat-error *ngIf="form.get('customerId')?.hasError('required')">
-              Customer is required
-            </mat-error>
+            <mat-hint>Leave blank for daily summaries without specific customers</mat-hint>
           </mat-form-field>
 
           <mat-form-field>

@@ -1,0 +1,87 @@
+.customers-container {
+  padding: 20px;
+}
+
+.header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  gap: 16px;
+  flex-wrap: wrap;
+
+  .filters {
+    display: flex;
+    gap: 16px;
+    flex: 1;
+    flex-wrap: wrap;
+
+    .search-field {
+      min-width: 300px;
+      flex: 1;
+    }
+
+    .filter-field {
+      min-width: 150px;
+    }
+  }
+}
+
+.customers-table {
+  width: 100%;
+  margin-top: 20px;
+
+  .customer-name {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    small {
+      color: rgba(0, 0, 0, 0.6);
+      font-size: 0.875rem;
+    }
+  }
+}
+
+.loading, .empty-state {
+  text-align: center;
+  padding: 40px;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.empty-state {
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+  }
+
+  p {
+    font-size: 16px;
+    margin-bottom: 16px;
+  }
+}
+
+mat-chip {
+  &.company-chip {
+    background-color: #e3f2fd;
+    color: #1976d2;
+  }
+
+  &.individual-chip {
+    background-color: #f3e5f5;
+    color: #7b1fa2;
+  }
+
+  &.active-chip {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+  }
+
+  &.inactive-chip {
+    background-color: #ffebee;
+    color: #c62828;
+  }
+}

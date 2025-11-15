@@ -1,0 +1,206 @@
+<div class="customer-form-container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>
+        @if (isEditMode) {
+          Edit Customer
+        } @else {
+          New Customer
+        }
+      </mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      @if (loading) {
+        <div class="loading">Loading customer...</div>
+      } @else {
+        <form [formGroup]="customerForm" (ngSubmit)="onSubmit()">
+          <div class="form-section">
+            <h3>Basic Information</h3>
+
+            <mat-checkbox formControlName="isCompany" class="full-width-field">
+              This is a company/business customer
+            </mat-checkbox>
+
+            <mat-form-field appearance="outline" class="full-width-field">
+              <mat-label>
+                @if (customerForm.get('isCompany')?.value) {
+                  Contact Person Name
+                } @else {
+                  Customer Name
+                }
+              </mat-label>
+              <input matInput formControlName="name" required>
+              <mat-icon matSuffix>person</mat-icon>
+              @if (customerForm.get('name')?.hasError('required') && customerForm.get('name')?.touched) {
+                <mat-error>Name is required</mat-error>
+              }
+            </mat-form-field>
+
+            @if (customerForm.get('isCompany')?.value) {
+              <mat-form-field appearance="outline" class="full-width-field">
+                <mat-label>Company Name</mat-label>
+                <input matInput formControlName="companyName" required>
+                <mat-icon matSuffix>business</mat-icon>
+                @if (customerForm.get('companyName')?.hasError('required') && customerForm.get('companyName')?.touched) {
+                  <mat-error>Company name is required</mat-error>
+                }
+              </mat-form-field>
+            }
+
+            @if (!customerForm.get('isCompany')?.value) {
+              <mat-form-field appearance="outline" class="full-width-field">
+                <mat-label>Company Name (Optional)</mat-label>
+                <input matInput formControlName="companyName">
+                <mat-icon matSuffix>business</mat-icon>
+                <mat-hint>If this person represents a company</mat-hint>
+              </mat-form-field>
+            }
+          </div>
+
+          <div class="form-section">
+            <h3>Contact Information</h3>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Email</mat-label>
+                <input matInput formControlName="email" type="email">
+                <mat-icon matSuffix>email</mat-icon>
+                @if (customerForm.get('email')?.hasError('email') && customerForm.get('email')?.touched) {
+                  <mat-error>Invalid email address</mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Phone</mat-label>
+                <input matInput formControlName="phone">
+                <mat-icon matSuffix>phone</mat-icon>
+              </mat-form-field>
+            </div>
+
+            @if (!customerForm.get('isCompany')?.value) {
+              <mat-form-field appearance="outline" class="full-width-field">
+                <mat-label>Contact Person</mat-label>
+                <input matInput formControlName="contactPerson">
+                <mat-icon matSuffix>person_outline</mat-icon>
+                <mat-hint>Additional contact person</mat-hint>
+              </mat-form-field>
+            }
+          </div>
+
+          <div class="form-section">
+            <h3>Address</h3>
+
+            <mat-form-field appearance="outline" class="full-width-field">
+              <mat-label>Street Address</mat-label>
+              <input matInput formControlName="address">
+              <mat-icon matSuffix>home</mat-icon>
+            </mat-form-field>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>City</mat-label>
+                <input matInput formControlName="city">
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>State/Province</mat-label>
+                <input matInput formControlName="state">
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Country</mat-label>
+                <input matInput formControlName="country">
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Postal Code</mat-label>
+                <input matInput formControlName="postalCode">
+              </mat-form-field>
+            </div>
+          </div>
+
+          @if (customerForm.get('isCompany')?.value) {
+            <div class="form-section">
+              <h3>Business Information</h3>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Tax Number</mat-label>
+                  <input matInput formControlName="taxNumber">
+                  <mat-icon matSuffix>receipt_long</mat-icon>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Website</mat-label>
+                  <input matInput formControlName="website" type="url">
+                  <mat-icon matSuffix>language</mat-icon>
+                </mat-form-field>
+              </div>
+            </div>
+          }
+
+          <div class="form-section">
+            <h3>Payment Terms</h3>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Credit Limit</mat-label>
+                <input matInput formControlName="creditLimit" type="number" min="0">
+                <mat-icon matSuffix>attach_money</mat-icon>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Payment Terms (Days)</mat-label>
+                <input matInput formControlName="paymentTermsDays" type="number" min="0">
+                <mat-hint>Net payment days</mat-hint>
+              </mat-form-field>
+            </div>
+
+            <mat-form-field appearance="outline" class="full-width-field">
+              <mat-label>Payment Method</mat-label>
+              <mat-select formControlName="paymentMethod">
+                <mat-option value="">None</mat-option>
+                <mat-option value="Cash">Cash</mat-option>
+                <mat-option value="Credit Card">Credit Card</mat-option>
+                <mat-option value="Bank Transfer">Bank Transfer</mat-option>
+                <mat-option value="Check">Check</mat-option>
+                <mat-option value="Other">Other</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <div class="form-section">
+            <h3>Additional Information</h3>
+
+            <mat-form-field appearance="outline" class="full-width-field">
+              <mat-label>Notes</mat-label>
+              <textarea matInput formControlName="notes" rows="4"></textarea>
+            </mat-form-field>
+
+            <mat-checkbox formControlName="isActive" class="full-width-field">
+              Active Customer
+            </mat-checkbox>
+          </div>
+
+          <div class="form-actions">
+            <button mat-button type="button" (click)="cancel()">
+              Cancel
+            </button>
+            <button mat-raised-button color="primary" type="submit" [disabled]="saving">
+              @if (saving) {
+                Saving...
+              } @else if (isEditMode) {
+                Update Customer
+              } @else {
+                Create Customer
+              }
+            </button>
+          </div>
+        </form>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>
