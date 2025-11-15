@@ -110,7 +110,7 @@ export class CustomerFormComponent implements OnInit {
     }
 
     this.saving = true;
-    const formValue = this.customerForm.value;
+    const formValue = this.sanitizeFormValue(this.customerForm.value);
 
     if (this.isEditMode && this.customerId) {
       const updateDto: UpdateCustomerDto = formValue;
@@ -137,6 +137,19 @@ export class CustomerFormComponent implements OnInit {
         }
       });
     }
+  }
+
+  private sanitizeFormValue(formValue: any): any {
+    // Convert empty strings to null for optional fields
+    const sanitized = { ...formValue };
+
+    Object.keys(sanitized).forEach(key => {
+      if (sanitized[key] === '' || sanitized[key] === null) {
+        sanitized[key] = null;
+      }
+    });
+
+    return sanitized;
   }
 
   cancel(): void {
